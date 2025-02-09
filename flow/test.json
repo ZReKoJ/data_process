@@ -1,0 +1,23 @@
+{
+    "nodes": {
+        "H001" : {
+            "__comment" : "This is a comment",
+            "__comment" : "This is a commenta",
+            "name" : "test",
+            "type" : "component",
+            "description" : "do something"
+        },
+        "H002" : {
+            "__comment" : "This is a comment",
+            "__comment" : "This is a commenta",
+            "name" : "test",
+            "type" : "component",
+            "description" : "do something"
+        }
+    },
+    "dependencies": {
+        "H001": ["H002"]
+    },
+    "LOGGING_LEVEL" : "INFO",
+    "WORKERS" : "20"
+}

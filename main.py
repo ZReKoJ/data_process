@@ -45,6 +45,9 @@ class DataProcessExecutor:
     def log_debug(self, message):
         self._logger.debug("{} ~> {}".format(self.__id, message))
 
+    def log_exception(self, message):
+        self._logger.exception("{} ~> {}".format(self.__id, message))
+
     def __get_logger(self, log_file):
         logger_key = "flow"
         fileConfig(
@@ -106,9 +109,9 @@ class DataProcessExecutor:
 
             command.append("-z")
             command.append(node)
-            command.append("-i")
+            command.append("--id")
             command.append(self.__id)
-            command.append("-c")
+            command.append("-f")
             command.append(self.__args["file"])
 
             for dependency in self.__graph.get_reversed_edge(node):
@@ -188,7 +191,7 @@ def parse_arguments():
     parser.add_argument("file", help="Flow Configuration file", type=str)
 
     # Optional arguments with parameter
-    parser.add_argument("-i", "--id", type=str, help="Execution ID", action="append", default=[get_time(dateformat="%Y%m%d%H%M%S")])
+    parser.add_argument("--id", type=str, help="Execution ID", action="append", default=[get_time(dateformat="%Y%m%d%H%M%S")])
     
     # Optional arguments without parameter
     parser.add_argument("--show-command", help="Show the commands to execute the components", action="store_true")

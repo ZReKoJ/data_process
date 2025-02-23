@@ -35,4 +35,10 @@ def json_raise_on_duplicates(key_value_pairs, not_check=[]):
                 registered_keys[key] = value
     
     return registered_keys
+            
+######################## CLASSES
+
+# Return a list of tuples (name, class) of all subclasses for a Class given
+def get_subclasses(parent_class):
+    return parent_class.__subclasses__()
                 

@@ -2,10 +2,8 @@ import os
 import argparse
 import json
 
-
 from lib.data_process_lib import * 
 from lib.directed_graph import DirectedGraph
-
 
 class DataProcessExecutor:
 

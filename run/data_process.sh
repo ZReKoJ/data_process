@@ -1,5 +1,9 @@
 #!/bin/bash
-# Not using #!/usr/bin/python because the python I configured can be changed
+
 
 directory=$(dirname $(realpath $0))
-python ${directory}/../main.py $@
+
+#find ${directory}/../component -type f -exec dos2unix {} \;
+find ${directory}/../component -type f -exec chmod +x {} \;
+
+${directory}/../main.py $@

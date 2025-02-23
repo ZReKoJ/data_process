@@ -4,6 +4,8 @@
             "__comment" : "This is a comment",
             "__comment" : "This is a commenta",
             "name" : "test",
+            "config" : {},
+            "script" : "copy_files.py",
             "type" : "component",
             "description" : "do something"
         },
@@ -11,6 +13,8 @@
             "__comment" : "This is a comment",
             "__comment" : "This is a commenta",
             "name" : "test",
+            "config" : {},
+            "script" : "copy_files.py",
             "type" : "component",
             "description" : "do something"
         }
@@ -19,5 +23,5 @@
         "H001": ["H002"]
     },
     "LOGGING_LEVEL" : "INFO",
-    "WORKERS" : "20"
+    "WORKERS" : 20
 }

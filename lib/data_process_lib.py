@@ -1,48 +1,31 @@
-# Library for data_process scripts 
-import os
-import sys
-import logging
-import json
-import random
-import string
-import datetime
-import tarfile
-import shutil
 import argparse
-import inspect
 
-from queue import Queue
-from logging.config import fileConfig
+# Component Class
+# Used to be the parents of all the scripts in component folder
+# Data process is based on the rules defined in this parent class
+class Component(object):
 
-######################## DATES
+    def __init__(self):
+        self.__args = self.__parseArguments()
 
-# Given a date convert into string formatted
-def get_time(date=datetime.datetime.now(), dateformat="%Y-%m-%d %H:%M:%S"):
-    return date.strftime(dateformat)
+    def __parseArguments(self):
+        # Create argument parser
+        parser = argparse.ArgumentParser()
 
-######################## FOLDERS
+        # Mandatory arguments
+        # Nothing 
 
-# IMPROVEMENT: Can rewrite the function to accept recursion create paths
-def create_if_not_exists_folders(folders):
-    for folder in folders:
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-            
-######################## JSON
+        # Optional arguments
+        parser.add_argument("-i", "--id", required=True, type=str, help="Execution ID")
+        parser.add_argument("-z", "--component_id", required=True, type=str, help="Component ID")
+        parser.add_argument("-f", "--flow", required=True, type=str, help="Flow File")
+        parser.add_argument("-i", "--input", type=str, action='append', default=[], help="Input Data")
 
-# Create some exceptions when reading a JSON file
-# not_check: apply some functions to skip some keys for the duplicate validation
-def json_raise_on_duplicates(key_value_pairs, not_check=[]):
-    # Reject duplicate keys
-    registered_keys = {}
-    
-    for key, value in key_value_pairs:
-        to_be_filtered = next((True for function in not_check if function(key)), False)
-        if not to_be_filtered:
-            if key in registered_keys:
-                raise ValueError("Duplicate key: {}".format(key))
-            else:
-                registered_keys[key] = value
-    
-    return registered_keys
-                
+        # Version
+        parser.add_argument("-v", "--version", action="version", help="Version", version="%(prog)s - Version 1.0")
+
+        # Parse Arguments
+        args = vars(parser.parse_args())
+
+        return args
+        

@@ -1,0 +1,25 @@
+{
+    "nodes": {
+        "C001" : {
+            "name" : "sleep",
+            "config" : {
+                "seconds" : 0
+            },
+            "script" : "sleep.py",
+            "type" : "component"
+        },
+        "C002" : {
+            "name" : "sleep",
+            "config" : {
+                "seconds" : 1
+            },
+            "script" : "sleep.py",
+            "type" : "component"
+        }
+    },
+    "dependencies": {
+        "C001": ["C002"]
+    },
+    "LOGGING_LEVEL" : "INFO",
+    "WORKERS" : 20
+}

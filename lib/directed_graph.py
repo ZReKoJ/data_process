@@ -16,9 +16,9 @@ class DirectedGraph:
 
     def add_edge(self, origin, destination):
         if origin not in self.__nodes:
-            raise AssertionError("Origin {} not found".format(key))
+            raise AssertionError("Origin {} not found".format(origin))
         if destination not in self.__nodes:
-            raise AssertionError("Destination {} not found".format(key))
+            raise AssertionError("Destination {} not found".format(destination))
 
         origins = self.__reversed_edges[destination]
         destinations = self.__edges[origin]

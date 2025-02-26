@@ -1,5 +1,8 @@
 __pycache__
 __init__.py
-
-# 
+ 
 log/
+execution/
+
+config/
+!config/helloworld.json

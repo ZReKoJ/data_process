@@ -157,6 +157,8 @@ class DataProcessExecutor:
                         component_task.add_done_callback(functools.partial(self._on_component_finished, node))
                     else:
                         self.__components_waiting_to_be_executed[node] = { edge : False for edge in self.__graph.get_reversed_edge(node) }
+            else:
+                raise RuntimeError("Flow check failed")
         else: 
             self.__generate_commands()
 
@@ -179,9 +181,9 @@ class DataProcessExecutor:
                 component_task = self.__executor.submit(subprocess.call, self.__component_commands[edge], shell=True)
                 component_task.add_done_callback(functools.partial(self._on_component_finished, edge))
 
-            if all(self.__executed_nodes.values()):
-                self.log_info("End Flow")
-                self.__executor.shutdown(wait=True)
+        if all(self.__executed_nodes.values()):
+            self.log_info("End Flow")
+            self.__executor.shutdown(wait=True)
 
 def parse_arguments():
     # Create argument parser

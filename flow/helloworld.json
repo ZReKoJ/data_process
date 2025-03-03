@@ -1,11 +1,15 @@
 {
     "nodes": {
         "C001" : {
-            "name" : "sleep",
+            "name" : "shell",
             "config" : {
-                "seconds" : 0
+                "variables" : {},
+                "commands" : {
+                    "find_hello_world" : "find . -type f -name helloworld.json",
+                    "cat_flow" : "cat {find_hello_world}"
+                }
             },
-            "script" : "sleep.py",
+            "script" : "command.py",
             "type" : "component"
         },
         "C002" : {
@@ -15,10 +19,19 @@
             },
             "script" : "sleep.py",
             "type" : "component"
+        },
+        "C003" : {
+            "name" : "copy_helloworld",
+            "config" : {
+                "match" : [".*hello_world.*"]
+            },
+            "script" : "copy_files.py",
+            "type" : "component"
         }
     },
     "dependencies": {
-        "C001": ["C002"]
+        "C003": ["C001"],
+        "C002": ["C003"]
     },
     "LOGGING_LEVEL" : "INFO",
     "WORKERS" : 20

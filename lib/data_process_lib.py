@@ -47,10 +47,10 @@ class Component(object):
 
         self._logger.setLevel(self._config["LOGGING_LEVEL"])
 
-        self.__OUTPUT_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "_".join([self.whoami(), self._node_info["name"]]))
-        self.__INPUT_PATH = self._args["input"]
+        self._OUTPUT_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "_".join([self.whoami(), self._node_info["name"]]))
+        self._INPUT_PATH = self._args["input"]
 
-        self._data = self._read_input(self.__INPUT_PATH)
+        self._data = self._read_input(self._INPUT_PATH)
 
         self.log_info("Component Initialized")
 
@@ -95,11 +95,11 @@ class Component(object):
         self.__clean_output()
 
     def __clean_output(self):
-        self.log_info("Output folder: {}".format(self.__OUTPUT_PATH))
-        if os.path.exists(self.__OUTPUT_PATH):
+        self.log_info("Output folder: {}".format(self._OUTPUT_PATH))
+        if os.path.exists(self._OUTPUT_PATH):
             self.log_info("Output folder exists, proceed empty data")
-            shutil.rmtree(self.__OUTPUT_PATH)
-        os.makedirs(self.__OUTPUT_PATH)
+            shutil.rmtree(self._OUTPUT_PATH)
+        os.makedirs(self._OUTPUT_PATH)
 
     def get_args(self):
         return self._args

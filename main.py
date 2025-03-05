@@ -7,6 +7,8 @@ import functools
 
 import concurrent.futures
 
+from collections import OrderedDict
+
 from lib.utils import * 
 from lib.directed_graph import DirectedGraph
 
@@ -61,7 +63,7 @@ class DataProcessExecutor:
             return json.load(fread, object_pairs_hook=lambda dictionary : json_raise_on_duplicates(dictionary, [
                 # Reservation for comments, not check, for example "__comment"
                 lambda key : key.startswith("__")
-            ]))
+            ], OrderedDict))
 
     def __check_component_paths(self):
         component_paths = {}

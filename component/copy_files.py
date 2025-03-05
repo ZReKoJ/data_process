@@ -1,7 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 import sys
 import os
 import re
+import shutil
 
 # Add the lib directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))

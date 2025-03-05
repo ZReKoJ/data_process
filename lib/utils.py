@@ -22,9 +22,9 @@ def create_if_not_exists_folders(folders):
 
 # Create some exceptions when reading a JSON file
 # not_check: apply some functions to skip some keys for the duplicate validation
-def json_raise_on_duplicates(key_value_pairs, not_check=[]):
+def json_raise_on_duplicates(key_value_pairs, not_check=[], dictionary_type=dict):
     # Reject duplicate keys
-    registered_keys = {}
+    registered_keys = dictionary_type()
     
     for key, value in key_value_pairs:
         to_be_filtered = next((True for function in not_check if function(key)), False)

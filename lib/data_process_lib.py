@@ -4,6 +4,7 @@ import logging
 import json
 import shutil
 
+from collections import OrderedDict
 from utils import json_raise_on_duplicates
 from logging.config import fileConfig
 
@@ -75,7 +76,7 @@ class Component(object):
             flow_config = json.load(fr, object_pairs_hook=lambda dictionary : json_raise_on_duplicates(dictionary, [
                 # Reservation for comments, not check, for example "__comment"
                 lambda key : key.startswith("__")
-            ]))
+            ], OrderedDict))
             if self.whoami() not in flow_config.get("nodes", {}):
                 raise ImportError("Node with ID {} not found in flow {}".format(self._component_id, config_files))
             return flow_config.get("nodes", {}).get(self.whoami(), {})

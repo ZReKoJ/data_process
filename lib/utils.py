@@ -1,6 +1,7 @@
 import os
 import datetime
 import logging
+import copy
 
 from logging.config import fileConfig
 
@@ -41,4 +42,22 @@ def json_raise_on_duplicates(key_value_pairs, not_check=[], dictionary_type=dict
 # Return a list of tuples (name, class) of all subclasses for a Class given
 def get_subclasses(parent_class):
     return parent_class.__subclasses__()
+            
+######################## DATA TRANSFORMATION
+
+# For any combination of list + dict, it unpacks the values and return by data depth
+# It should ensure all yield values are the same length, otherwise exception is triggered
+def flatten(data, values=[]):
+    copy_values = copy.deepcopy(values)
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            copy_values.append(key)
+            yield from flatten(value, copy_values)
+    elif isinstance(data, list):
+        for value in data:
+            yield from flatten(value, copy_values)
+    else:
+        copy_values.append(str(data))
+        yield copy_values
                 

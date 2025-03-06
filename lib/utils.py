@@ -2,6 +2,9 @@ import os
 import datetime
 import logging
 import copy
+import sys
+import random
+import string
 
 from logging.config import fileConfig
 
@@ -37,11 +40,34 @@ def json_raise_on_duplicates(key_value_pairs, not_check=[], dictionary_type=dict
     
     return registered_keys
             
-######################## CLASSES
+######################## PROGRAM ENTITIES
 
 # Return a list of tuples (name, class) of all subclasses for a Class given
 def get_subclasses(parent_class):
     return parent_class.__subclasses__()
+
+# Return a list of tuples (name, function) of a Class given
+# Can be added some filterings for the functions
+def get_functions(class_type, filters=[
+    lambda name, function : not name.startswith("_"), # not protected functions
+    lambda name, function : not name.startswith("__"), # not private functions
+    lambda name, function : not isinstance(function, classmethod), # not classmethods
+    lambda name, function : not isinstance(function, staticmethod) # not staticmethods
+]):
+    fixed_filters = [
+        lambda name, function : callable(getattr(class_type, name)) # Can be called as function
+    ]
+
+    return [
+        (name, function)
+        for name, function
+        in class_type.__dict__.items()
+        if all(
+            check(name, function)
+            for check
+            in filters + fixed_filters
+        )
+    ]
             
 ######################## DATA TRANSFORMATION
 
@@ -60,4 +86,104 @@ def flatten(data, values=[]):
     else:
         copy_values.append(str(data))
         yield copy_values
+
+def generate_value(function_name):
+    return ValueGenerator.get_function(function_name)
+
+######################## CLASS
+
+class ValueGenerator:
+
+    class __Functions:
+
+        def incremental_1(value):
+            return str(int(value) + 1).rjust(len(value), '0')
+
+        def incremental_2(value):
+            return str(int(value) + 2).rjust(len(value), '0')
+
+        def incremental_3(value):
+            return str(int(value) + 3).rjust(len(value), '0')
+
+        def timeYYYYMMDDHH24MISS(value):
+            return get_time("%Y%m%d%H%M%S")
+
+        def timeYYMMDDHH24MISS(value):
+            return get_time("%y%m%d%H%M%S")
+
+        def timeYYYYMMDD(value):
+            return get_time("%Y%m%d")
+
+        def timeYYMMDD(value):
+            return get_time("%y%m%d")
+
+        def timeHH24MISS(value):
+            return get_time("%H%M%S")
+
+        def timeHH24_MI_SS(value):
+            return get_time("%H:%M:%S")
+
+        def random_char_29(value):
+            return ''.join(random.choice(string.ascii_lowercase) for i in range(29))
+
+        def random_digit_12(value):
+            return ''.join(random.choice(string.digits) for i in range(12))
+
+        def random_digit_1(value):
+            return ''.join(random.choice(string.digits) for i in range(1))
+
+        def random_digit_2(value):
+            return ''.join(random.choice(string.digits) for i in range(2))
+
+        def random_digit_3(value):
+            return ''.join(random.choice(string.digits) for i in range(3))
+
+        def random_digit_5(value):
+            return ''.join(random.choice(string.digits) for i in range(5))
+
+        def random_digit_2_without_0(value):
+            return str(random.randint(1, 99))
+
+        def fill_random_char_29(value):
+            return value + "".join(random.choice(string.ascii_lowercase) for i in range(29 - len(value)))
+
+        def keep_3_first_fill_random_char_46(value):
+            return value[0:3] + "".join(random.choice(string.ascii_lowercase) for i in range(46 - 3))
+
+        def incremental_random_char_29(value):
+            incremental_length = 9
+            if value is None or value == "":
+                return "0".zfill(incremental_length) + "".join(random.choice(string.ascii_lowercase) for i in range(29 - incremental_length))
+            else:
+                return str(int(value[0:incremental_length]) + 1).zfill(incremental_length) + "".join(random.choice(string.ascii_lowercase) for i in range(29 - incremental_length))
+
+        def UTC_offset_XXX(value):
+            # format X00
+            is_dst = time.daylight and time.localtime().tm_isdst > 0
+            utc_offset = -(time.altzone if is_dst else time.timezone) / 60 / 60
+            return str(int(utc_offset) * 100)
+
+        def UTC_offset__XXXX(value):
+            # format X00
+            is_dst = time.daylight and time.localtime().tm_isdst > 0
+            utc_offset = -(time.altzone if is_dst else time.timezone) / 60 / 60
+            return "+" if utc_offset > 0 else "-" + str(int(utc_offset) * 100).rjust(4, '0')
+
+        
+
+    @staticmethod
+    def get_function(function_name):
+        callable_function = next((
+            function
+            for name, function
+            in get_functions(ValueGenerator.__Functions)
+            if name == function_name
+        ), None)
+
+        if not callable_function:
+            raise NotImplementedError("{} function is not implemented".format(function_name))
+
+        return callable_function
+
+
                 

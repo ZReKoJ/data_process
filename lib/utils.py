@@ -106,22 +106,22 @@ class ValueGenerator:
             return str(int(value) + 3).rjust(len(value), '0')
 
         def timeYYYYMMDDHH24MISS(value):
-            return get_time("%Y%m%d%H%M%S")
+            return get_time(dateformat="%Y%m%d%H%M%S")
 
         def timeYYMMDDHH24MISS(value):
-            return get_time("%y%m%d%H%M%S")
+            return get_time(dateformat="%y%m%d%H%M%S")
 
         def timeYYYYMMDD(value):
-            return get_time("%Y%m%d")
+            return get_time(dateformat="%Y%m%d")
 
         def timeYYMMDD(value):
-            return get_time("%y%m%d")
+            return get_time(dateformat="%y%m%d")
 
         def timeHH24MISS(value):
-            return get_time("%H%M%S")
+            return get_time(dateformat="%H%M%S")
 
         def timeHH24_MI_SS(value):
-            return get_time("%H:%M:%S")
+            return get_time(dateformat="%H:%M:%S")
 
         def random_char_29(value):
             return ''.join(random.choice(string.ascii_lowercase) for i in range(29))

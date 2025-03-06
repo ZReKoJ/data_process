@@ -14,9 +14,11 @@ class SleepComponent(Component):
     def __init__(self):
         super().__init__()
 
+    # Abstract from parent
     def _read_input(self, input_list):
         return None
         
+    # Abstract from parent
     def _read_config(self, node_info):
         config = super()._read_config(node_info)
 
@@ -24,7 +26,8 @@ class SleepComponent(Component):
         config["seconds"] = config.get("seconds", 0)
 
         return config
-
+        
+    # Abstract from parent
     def process(self):
         super().process()
 

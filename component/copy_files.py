@@ -15,6 +15,7 @@ class CopyFilesComponent(Component):
     def __init__(self):
         super().__init__()
 
+    # Abstract from parent
     def _read_input(self, input_list):
         # If copy out and path is not specified then error
         if self._config["in_out"] == "out" and "path" not in self._config:
@@ -34,6 +35,7 @@ class CopyFilesComponent(Component):
 
         return { root : files for path in input_list for root, dirs, files in os.walk(path) if len(files) > 0 }
 
+    # Abstract from parent
     def _read_config(self, node_info):
         config = super()._read_config(node_info)
 
@@ -45,6 +47,7 @@ class CopyFilesComponent(Component):
 
         return config
 
+    # Abstract from parent
     def process(self):
         super().process()
 

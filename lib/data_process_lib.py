@@ -3,10 +3,31 @@ import argparse
 import logging
 import json
 import shutil
+import re
 
 from collections import OrderedDict
 from utils import json_raise_on_duplicates
 from logging.config import fileConfig
+
+def json_custom_process(key_value_pairs, mapping_values):
+
+    mapped_key_value_pairs = [ 
+        (key, re.sub(
+            # {word} pattern
+            "\\{(\\w+)\\}",
+            lambda ocurrence : str(mapping_values.get(ocurrence.group(1), ocurrence.group(0))),
+            value
+        ) if isinstance(value, str) else value)
+        for key, value 
+        in key_value_pairs 
+    ]
+
+    registered_keys = json_raise_on_duplicates(mapped_key_value_pairs, [
+        # Reservation for comments, not check, for example "__comment"
+        lambda key : key.startswith("__")
+    ], OrderedDict)
+
+    return registered_keys
 
 # Component Class
 # Used to be the parents of all the scripts in component folder
@@ -19,11 +40,19 @@ class Component(object):
         self._execution_id = self._args["id"]
         self._component_id = self._args["component_id"]
 
+        self._FLOW_CONFIG = self._args["flow"]
         self._BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
         self._LOG_PATH = os.path.join(self._BASE_PATH, "log")
 
         if not os.path.exists(self._LOG_PATH):
             os.makedirs(self._LOG_PATH)
+
+        # To have some dynamic values
+        self._execution_variables = {
+            "flow_path" : self._FLOW_CONFIG,
+            "base_path" : self._BASE_PATH,
+            "log_path" : self._LOG_PATH
+        }
 
         self._logger = self._get_logger(os.path.join(self._LOG_PATH, self._execution_id + ".log"))
         # Default value, after init it will be overwritted
@@ -42,7 +71,6 @@ class Component(object):
         self._logger.exception("{} ~> {}".format(self.whoami(), message))
 
     def init(self):
-        self._FLOW_CONFIG = self._args["flow"]
         self._node_info = self._read_flow(self._FLOW_CONFIG)
         self._config = self._read_config(self._node_info)
 
@@ -73,10 +101,7 @@ class Component(object):
             raise ImportError("No flow configuration is provided: {}".format(config_file))
         
         with open(config_file, "r") as fr:
-            flow_config = json.load(fr, object_pairs_hook=lambda dictionary : json_raise_on_duplicates(dictionary, [
-                # Reservation for comments, not check, for example "__comment"
-                lambda key : key.startswith("__")
-            ], OrderedDict))
+            flow_config = json.load(fr, object_pairs_hook=lambda dictionary : json_custom_process(dictionary, self._execution_variables))
             if self.whoami() not in flow_config.get("nodes", {}):
                 raise ImportError("Node with ID {} not found in flow {}".format(self._component_id, config_files))
             return flow_config.get("nodes", {}).get(self.whoami(), {})

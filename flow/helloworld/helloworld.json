@@ -1,11 +1,15 @@
 {
     "nodes": {
         "__comment" : "Some variables are reserved and can be replaced by execution values",
-        "__comment" : "['execution_id', 'flow_path', 'base_path', 'log_path']",
+        "__comment" : "'execution_id': execution id of the flow",
+        "__comment" : "'flow_path': the path where the input config flow resides",
+        "__comment" : "'base_path': the base directory where the script is located",
+        "__comment" : "'log_path': path where the log resides",
+        "__comment" : "'current_path': current directory where the script is executed",
         "C001": {
             "name": "copy_flow",
             "config": {
-                "path": "{flow_path}"
+                "path": "{current_path}/{flow_path}"
             },
             "script": "copy_files.py",
             "type": "component"
@@ -16,7 +20,7 @@
                 "variables": {},
                 "commands": {
                     "find_hello_world": "find . -type f -name helloworld.json",
-                    "cat_flow": "cat {find_hello_world}"
+                    "cat_flow": "echo aaa"
                 }
             },
             "script": "command.py",

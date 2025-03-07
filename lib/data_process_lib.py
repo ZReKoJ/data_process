@@ -52,7 +52,8 @@ class Component(object):
             "execution_id" : self._execution_id,
             "flow_path" : self._FLOW_CONFIG,
             "base_path" : self._BASE_PATH,
-            "log_path" : self._LOG_PATH
+            "log_path" : self._LOG_PATH,
+            "current_path" : os.getcwd()
         }
 
         self._logger = self._get_logger(os.path.join(self._LOG_PATH, self._execution_id + ".log"))

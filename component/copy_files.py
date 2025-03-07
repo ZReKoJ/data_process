@@ -33,7 +33,17 @@ class CopyFilesComponent(Component):
         if len(input_list) == 0:
             raise ImportError("No input provided")
 
-        return { root : files for path in input_list for root, dirs, files in os.walk(path) if len(files) > 0 }
+        files = []
+
+        for input_record in input_list:
+            if os.path.isdir(input_record):
+                files = files + [ os.path.join(root, filename) for root, dirs, files in os.walk(input_record) if len(files) > 0 for filename in files ]
+            elif os.path.isfile(input_record):
+                files.append(input_record)
+            else:
+                raise ImportError("Path {} is incorrect".format(input_record))
+
+        return files
 
     # Abstract from parent
     def _read_config(self, node_info):
@@ -55,17 +65,16 @@ class CopyFilesComponent(Component):
 
         destination_path = self._OUTPUT_PATH if self._config["in_out"] == "in" else self._config["path"]
 
-        for path, filenames in self._data.items():
-            for filename in filenames:
-                if any([ re.search(regex, filename) for regex in self._config["match"]]):
-                    origin_file = os.path.join(path, filename)
-                    destination_file = os.path.join(destination_path, filename)
-                    if not self._config["overwrite"] and os.path.exists(destination_file):
-                        raise FileExistsError("{} file already exists in the destination folder".format(filename))
-                    if self._config["move"]:
-                        shutil.move(origin_file, destination_file)
-                    else:
-                        shutil.copy(origin_file, destination_file)
+        for origin_file in self._data:
+            filename = os.path.basename(origin_file)
+            if any([ re.search(regex, filename) for regex in self._config["match"]]):
+                destination_file = os.path.join(destination_path, filename)
+                if not self._config["overwrite"] and os.path.exists(destination_file):
+                    raise FileExistsError("{} file already exists in the destination folder".format(filename))
+                if self._config["move"]:
+                    shutil.move(origin_file, destination_file)
+                else:
+                    shutil.copy(origin_file, destination_file)
 
         self.log_info("End Process")
 

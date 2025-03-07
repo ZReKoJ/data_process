@@ -1,9 +1,11 @@
 {
     "nodes": {
+        "__comment" : "Some variables are reserved and can be replaced by execution values",
+        "__comment" : "['execution_id', 'flow_path', 'base_path', 'log_path']",
         "C001": {
             "name": "copy_flow",
             "config": {
-                "path": "{base_path}/flow/helloworld.json"
+                "path": "{flow_path}"
             },
             "script": "copy_files.py",
             "type": "component"

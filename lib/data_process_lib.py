@@ -49,6 +49,7 @@ class Component(object):
 
         # To have some dynamic values
         self._execution_variables = {
+            "execution_id" : self._execution_id,
             "flow_path" : self._FLOW_CONFIG,
             "base_path" : self._BASE_PATH,
             "log_path" : self._LOG_PATH

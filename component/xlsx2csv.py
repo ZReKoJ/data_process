@@ -5,6 +5,7 @@ import os
 import time 
 import zipfile
 import csv
+import string
 
 import xml.etree.ElementTree as ET
 
@@ -90,24 +91,25 @@ class XLSXComponent(Component):
         }
         
     def __read_worksheet(self, xml_tree, shared_strings):
-        rows = xml_tree.findall(self.__etree_tag_regex.format("row"))
-
+        max_row = 0
+        max_col = 0
         data = []
-        for row in rows:
-            row_data = []
-            for cell in row.findall(self.__etree_tag_regex.format("c")):
-                cell_value = cell.find(self.__etree_tag_regex.format("v"))
-                if cell_value is not None:
-                    # Check if it is a shared string
-                    if cell.get("t") == "s":
-                        row_data.append(shared_strings[int(cell_value.text)])
-                    else:
-                        row_data.append(cell_value.text)
-                else:
-                    row_data.append("") 
-            data.append(row_data)
 
-        return data
+        for cell in xml_tree.getroot().findall("main:sheetData/main:row/main:c", self.__namespace):
+            cell_reference = cell.get("r")
+            cell_row = int(''.join(filter(str.isdigit, cell_reference)))
+            cell_col = int(self.__column_letter_to_index(''.join(filter(str.isalpha, cell_reference))))
+            
+            max_row = max(max_row, cell_row)
+            max_col = max(max_col, cell_col)
+
+            cell_value = cell.find("main:v", self.__namespace)
+            cell_text = shared_strings[int(cell_value.text)] if cell_value is not None else cell_value.text
+            
+            # return value, index row, index col --> starts from 0 so -1
+            data.append((cell_text, cell_row - 1, cell_col - 1))
+
+        return data, max_row, max_col
 
     def __read_xlsx_content(self, filepath):
         file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
@@ -125,9 +127,21 @@ class XLSXComponent(Component):
             
             for sheet_id, sheetname, sheet_rid in worksheets:
                 with zip_file.open('xl/{}'.format(relations[sheet_rid])) as xml:
-                    data = self.__read_worksheet(ET.parse(xml), shared_strings)
+                    data, num_rows, num_cols = self.__read_worksheet(ET.parse(xml), shared_strings)
+                    matrix = [[None] * num_cols for _ in range(num_rows)]
+                    
+                    for value, index_row, index_col in data:
+                        matrix[index_row][index_col] = value
+
                     with open(os.path.join(self._OUTPUT_PATH, "{}_{}.csv".format(file_basename, sheetname)), "w") as fw:
-                        csv.writer(fw).writerows(data)
+                        csv.writer(fw).writerows(matrix)
+
+    def __column_letter_to_index(self, col_letter):
+        return sum(
+            (string.ascii_uppercase.index(character) + 1) * (26 ** index)
+            for index, character
+            in enumerate(reversed(col_letter))
+        )
 
 if __name__ == "__main__":
     try:

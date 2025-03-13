@@ -104,7 +104,9 @@ class XLSXComponent(Component):
             max_col = max(max_col, cell_col)
 
             cell_value = cell.find("main:v", self.__namespace)
-            cell_text = shared_strings[int(cell_value.text)] if cell_value is not None else cell_value.text
+            cell_text = None
+            if cell_value is not None:
+                cell_text = shared_strings[int(cell_value.text)] if cell.get("t") == "s" else cell_value.text
             
             # return value, index row, index col --> starts from 0 so -1
             data.append((cell_text, cell_row - 1, cell_col - 1))

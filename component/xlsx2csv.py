@@ -18,6 +18,12 @@ class XLSXComponent(Component):
     def __init__(self):
         super().__init__()
 
+        self.__namespace = {
+            'main' : 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+            'r' : 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+            'relationship' : 'http://schemas.openxmlformats.org/package/2006/relationships'
+        }
+
         self.__etree_tag_regex = ".//{{http://schemas.openxmlformats.org/spreadsheetml/2006/main}}{}"
 
     # Abstract from parent
@@ -62,16 +68,27 @@ class XLSXComponent(Component):
         return [
             sharedstring.text 
             for sharedstring 
-            in xml_tree.findall(self.__etree_tag_regex.format("t"))
+            in xml_tree.getroot().findall('main:si/main:t', self.__namespace)
         ]
 
     def __get_worksheets(self, xml_tree):
-        return { 
-            sheet.attrib["sheetId"] : sheet.attrib["name"]
+        return [
+            (
+                sheet.get("sheetId"), 
+                sheet.get("name"), 
+                sheet.get('{{{}}}id'.format(self.__namespace.get("r")))
+            )
             for sheet 
-            in xml_tree.findall(self.__etree_tag_regex.format("sheet"))
+            in xml_tree.getroot().findall('main:sheets/main:sheet', self.__namespace)
+        ]
+
+    def __get_relations(self, xml_tree):
+        return {
+            relation.get("Id") : relation.get("Target")
+            for relation
+            in xml_tree.getroot().findall('relationship:Relationship', self.__namespace)
         }
-    
+        
     def __read_worksheet(self, xml_tree, shared_strings):
         rows = xml_tree.findall(self.__etree_tag_regex.format("row"))
 
@@ -102,9 +119,12 @@ class XLSXComponent(Component):
 
             with zip_file.open("xl/workbook.xml") as xml:
                 worksheets = self.__get_worksheets(ET.parse(xml))
+
+            with zip_file.open("xl/_rels/workbook.xml.rels") as xml:
+                relations = self.__get_relations(ET.parse(xml))
             
-            for sheetid, sheetname in worksheets.items():
-                with zip_file.open('xl/worksheets/sheet{}.xml'.format(sheetid)) as xml:
+            for sheet_id, sheetname, sheet_rid in worksheets:
+                with zip_file.open('xl/{}'.format(relations[sheet_rid])) as xml:
                     data = self.__read_worksheet(ET.parse(xml), shared_strings)
                     with open(os.path.join(self._OUTPUT_PATH, "{}_{}.csv".format(file_basename, sheetname)), "w") as fw:
                         csv.writer(fw).writerows(data)

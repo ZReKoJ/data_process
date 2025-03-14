@@ -19,7 +19,7 @@
             "config": {
                 "path": "{base_path}/flow/helloworld/",
                 "match": [
-                    "test.xlsx"
+                    ".*.xlsx"
                 ]
 
             },

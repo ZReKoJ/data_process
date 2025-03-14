@@ -169,8 +169,6 @@ class ValueGenerator:
             utc_offset = -(time.altzone if is_dst else time.timezone) / 60 / 60
             return "+" if utc_offset > 0 else "-" + str(int(utc_offset) * 100).rjust(4, '0')
 
-        
-
     @staticmethod
     def get_function(function_name):
         callable_function = next((

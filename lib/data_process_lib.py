@@ -5,6 +5,8 @@ import json
 import shutil
 import re
 
+from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import Manager
 from collections import OrderedDict
 from utils import json_raise_on_duplicates
 from logging.config import fileConfig
@@ -113,7 +115,6 @@ class Component(object):
         config = node_info.get("config", {})
 
         # Default setting
-        config["WORKERS"] = config.get("WORKERS", 10)
         config["LOGGING_LEVEL"] = config.get("LOGGING_LEVEL", "INFO")
 
         return config
@@ -159,3 +160,31 @@ class Component(object):
 
         return args
         
+class AsyncComponent(Component):
+
+    def __init__(self):
+        super().__init__()
+
+    # Abstract from parent
+    def _read_input(self, input_list):
+        raise NotImplementedError("Function {} not implemented".format("_read_input"))
+
+    def _read_config(self, node_info):
+        config = super()._read_config(node_info)
+
+        # Default Setting 
+        config["WORKERS"] = config.get("WORKERS", 10)
+
+        return config
+
+    def process(self):
+        super().process()
+
+        self._executor = ProcessPoolExecutor(max_workers=self._config["WORKERS"])
+        self._data_manager = Manager()
+
+    def __del__(self):
+        self._data_manager.shutdown()
+        self._executor.shutdown(wait=True)
+
+    

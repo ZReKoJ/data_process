@@ -15,95 +15,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib'
 
 from data_process_lib import AsyncComponent
 
-def column_letter_to_index(col_letter):
-    return sum(
-        (string.ascii_uppercase.index(character) + 1) * (26 ** index)
-        for index, character
-        in enumerate(reversed(col_letter))
-    )
+class XLSX2CSVComponent(AsyncComponent):
 
-def get_sharedstrings(namespace, xml_tree):
-    return [
-        sharedstring.text 
-        for sharedstring 
-        in xml_tree.getroot().findall('main:si/main:t', namespace)
-    ]
-
-def get_worksheets(namespace, xml_tree):
-    return [
-        (
-            sheet.get("sheetId"), 
-            sheet.get("name"), 
-            sheet.get('{{{}}}id'.format(namespace.get("r")))
-        )
-        for sheet 
-        in xml_tree.getroot().findall('main:sheets/main:sheet', namespace)
-    ]
-
-def get_relations(namespace, xml_tree):
-    return {
-        relation.get("Id") : relation.get("Target")
-        for relation
-        in xml_tree.getroot().findall('relationship:Relationship', namespace)
-    }
-    
-def read_worksheet(namespace, xml_tree, shared_strings):
-    max_row = 0
-    max_col = 0
-    data = []
-
-    for cell in xml_tree.getroot().findall("main:sheetData/main:row/main:c", namespace):
-        cell_reference = cell.get("r")
-        cell_row = int(''.join(filter(str.isdigit, cell_reference)))
-        cell_col = int(column_letter_to_index(''.join(filter(str.isalpha, cell_reference))))
-        
-        max_row = max(max_row, cell_row)
-        max_col = max(max_col, cell_col)
-
-        cell_value = cell.find("main:v", namespace)
-        cell_text = None
-        if cell_value is not None:
-            cell_text = shared_strings[int(cell_value.text)] if cell.get("t") == "s" else cell_value.text
-        
-        # return value, index row, index col --> starts from 0 so -1
-        data.append((cell_text, cell_row - 1, cell_col - 1))
-
-    return data, max_row, max_col
-
-def read_xlsx_content(origin_filepath, destination_folder):
-
-    namespace = {
+    __namespace = {
         'main' : 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
         'r' : 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
         'relationship' : 'http://schemas.openxmlformats.org/package/2006/relationships'
     }
-
-    file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(origin_filepath)))
-
-    with zipfile.ZipFile(origin_filepath, "r") as zip_file:
-
-        with zip_file.open('xl/sharedStrings.xml') as xml:
-            shared_strings = get_sharedstrings(namespace, ET.parse(xml))
-
-        with zip_file.open("xl/workbook.xml") as xml:
-            worksheets = get_worksheets(namespace, ET.parse(xml))
-
-        with zip_file.open("xl/_rels/workbook.xml.rels") as xml:
-            relations = get_relations(namespace, ET.parse(xml))
-        
-        for sheet_id, sheetname, sheet_rid in worksheets:
-            with zip_file.open('xl/{}'.format(relations[sheet_rid])) as xml:
-                data, num_rows, num_cols = read_worksheet(namespace, ET.parse(xml), shared_strings)
-                matrix = [[None] * num_cols for _ in range(num_rows)]
-                
-                for value, index_row, index_col in data:
-                    matrix[index_row][index_col] = value
-
-                with open(os.path.join(destination_folder, "{}_{}.csv".format(file_basename, sheetname)), "w") as fw:
-                    csv.writer(fw).writerows(matrix)
-
-
-class XLSX2CSVComponent(AsyncComponent):
 
     def __init__(self):
         super().__init__()
@@ -138,7 +56,7 @@ class XLSX2CSVComponent(AsyncComponent):
         self.log_info("Start Process")
 
         futures = [ 
-            self._executor.submit(read_xlsx_content, filepath, self._OUTPUT_PATH)
+            self._executor.submit(self.read_xlsx_content, filepath, self._OUTPUT_PATH)
             for filepath
             in self._data
         ]
@@ -148,6 +66,96 @@ class XLSX2CSVComponent(AsyncComponent):
             future.result()
 
         self.log_info("End Process")
+
+    @classmethod
+    def column_letter_to_index(cls, col_letter):
+        return sum(
+            (string.ascii_uppercase.index(character) + 1) * (26 ** index)
+            for index, character
+            in enumerate(reversed(col_letter))
+        )
+
+    @classmethod
+    def get_sharedstrings(cls, xml_tree):
+        return [
+            sharedstring.text 
+            for sharedstring 
+            in xml_tree.getroot().findall('main:si/main:t', cls.__namespace)
+        ]
+
+    @classmethod
+    def get_worksheets(cls, xml_tree):
+        return [
+            (
+                sheet.get("sheetId"), 
+                sheet.get("name"), 
+                sheet.get('{{{}}}id'.format(cls.__namespace.get("r")))
+            )
+            for sheet 
+            in xml_tree.getroot().findall('main:sheets/main:sheet', cls.__namespace)
+        ]
+
+    @classmethod
+    def get_relations(cls, xml_tree):
+        return {
+            relation.get("Id") : relation.get("Target")
+            for relation
+            in xml_tree.getroot().findall('relationship:Relationship', cls.__namespace)
+        }
+        
+    @classmethod
+    def read_worksheet(cls, xml_tree, shared_strings):
+        max_row = 0
+        max_col = 0
+        data = []
+
+        for cell in xml_tree.getroot().findall("main:sheetData/main:row/main:c", cls.__namespace):
+            cell_reference = cell.get("r")
+            cell_row = int(''.join(filter(str.isdigit, cell_reference)))
+            cell_col = int(cls.column_letter_to_index(''.join(filter(str.isalpha, cell_reference))))
+            
+            max_row = max(max_row, cell_row)
+            max_col = max(max_col, cell_col)
+
+            cell_value = cell.find("main:v", cls.__namespace)
+            cell_text = None
+            if cell_value is not None:
+                cell_text = shared_strings[int(cell_value.text)] if cell.get("t") == "s" else cell_value.text
+            
+            # return value, index row, index col --> starts from 0 so -1
+            data.append((cell_text, cell_row - 1, cell_col - 1))
+
+        return data, max_row, max_col
+
+    @classmethod
+    def read_xlsx_content(cls, origin_filepath, destination_folder):
+
+        file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(origin_filepath)))
+
+        cls.log_info("Reading workbook[{}]".format("{}.{}".format(file_basename, file_extension)))
+
+        with zipfile.ZipFile(origin_filepath, "r") as zip_file:
+
+            with zip_file.open('xl/sharedStrings.xml') as xml:
+                shared_strings = cls.get_sharedstrings(ET.parse(xml))
+
+            with zip_file.open("xl/workbook.xml") as xml:
+                worksheets = cls.get_worksheets(ET.parse(xml))
+
+            with zip_file.open("xl/_rels/workbook.xml.rels") as xml:
+                relations = cls.get_relations(ET.parse(xml))
+            
+            for sheet_id, sheetname, sheet_rid in worksheets:
+                cls.log_info("Reading workbook[{}] worksheet[{}]".format("{}.{}".format(file_basename, file_extension), sheetname))
+                with zip_file.open('xl/{}'.format(relations[sheet_rid])) as xml:
+                    data, num_rows, num_cols = cls.read_worksheet(ET.parse(xml), shared_strings)
+                    matrix = [[None] * num_cols for _ in range(num_rows)]
+                    
+                    for value, index_row, index_col in data:
+                        matrix[index_row][index_col] = value
+
+                    with open(os.path.join(destination_folder, "{}_{}.csv".format(file_basename, sheetname)), "w") as fw:
+                        csv.writer(fw).writerows(matrix)
 
 if __name__ == "__main__":
     try:

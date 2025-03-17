@@ -36,6 +36,9 @@ def json_custom_process(key_value_pairs, mapping_values):
 # Data process is based on the rules defined in this parent class
 class Component(object):
 
+    _BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+    _loggers = {}
+
     def __init__(self):
         self._args = self.__parseArguments()
 
@@ -43,8 +46,8 @@ class Component(object):
         self._component_id = self._args["component_id"]
 
         self._FLOW_CONFIG = self._args["flow"]
-        self._BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
         self._LOG_PATH = os.path.join(self._BASE_PATH, "log")
+        self._LOG_FILE = os.path.join(self._LOG_PATH, self._execution_id + ".log")
 
         if not os.path.exists(self._LOG_PATH):
             os.makedirs(self._LOG_PATH)
@@ -58,27 +61,42 @@ class Component(object):
             "current_path" : os.getcwd()
         }
 
-        self._logger = self._get_logger(os.path.join(self._LOG_PATH, self._execution_id + ".log"))
+        logger = self._get_logger(self._LOG_FILE)
         # Default value, after init it will be overwritted
-        self._logger.setLevel("INFO")
+        logger.setLevel("INFO")
+        for handler in logger.handlers:
+            formatter = handler.formatter._fmt
+            handler.setFormatter(logging.Formatter(re.sub("%\(message\)s", "{} ~> %(message)s".format(self.whoami()), formatter)))
 
-    def log_info(self, message):
-        self._logger.info("{} ~> {}".format(self.whoami(), message))
+    @classmethod
+    def log_info(cls, message):
+        # Message on all loggers
+        for logger in cls._loggers.values():
+            logger.info(message)
 
-    def log_error(self, message):
-        self._logger.error("{} ~> {}".format(self.whoami(), message))
+    @classmethod
+    def log_error(cls, message):
+        # Message on all loggers
+        for logger in cls._loggers.values():
+            logger.error(message)
 
-    def log_debug(self, message):
-        self._logger.debug("{} ~> {}".format(self.whoami(), message))
+    @classmethod
+    def log_debug(cls, message):
+        # Message on all loggers
+        for logger in cls._loggers.values():
+            logger.debug(message)
 
-    def log_exception(self, message):
-        self._logger.exception("{} ~> {}".format(self.whoami(), message))
+    @classmethod
+    def log_exception(cls, message):
+        # Message on all loggers
+        for logger in cls._loggers.values():
+            logger.exception(message)
 
     def init(self):
         self._node_info = self._read_flow(self._FLOW_CONFIG)
         self._config = self._read_config(self._node_info)
 
-        self._logger.setLevel(self._config["LOGGING_LEVEL"])
+        self._get_logger(self._LOG_FILE).setLevel(self._config["LOGGING_LEVEL"])
 
         self._OUTPUT_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "_".join([self.whoami(), self._node_info["name"]]))
         self._INPUT_PATH = self._args["input"]
@@ -87,14 +105,17 @@ class Component(object):
 
         self.log_info("Component Initialized")
 
-    def _get_logger(self, log_file):
-        logger_key = "component"
-        fileConfig(
-            os.path.join(self._BASE_PATH, "config", "logging.ini"),
-            defaults={"LOG_FILE" : log_file}
-        )
-        logger = logging.getLogger(logger_key)
-        return logger
+    @classmethod
+    def _get_logger(cls, log_file):
+        if log_file not in cls._loggers:
+            logger_key = "component"
+            fileConfig(
+                os.path.join(cls._BASE_PATH, "config", "logging.ini"),
+                defaults={"LOG_FILE" : log_file}
+            )
+            cls._loggers[log_file] = logging.getLogger(logger_key)
+        
+        return cls._loggers[log_file]
     
     # Abstract method. Must be implemented on all subclasses of this class
     def _read_input(self, input_list):

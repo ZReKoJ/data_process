@@ -200,12 +200,9 @@ class AsyncComponent(Component):
 
     def process(self):
         super().process()
-
         self._executor = ProcessPoolExecutor(max_workers=self._config["WORKERS"])
-        self._data_manager = Manager()
 
     def __del__(self):
-        self._data_manager.shutdown()
         self._executor.shutdown(wait=True)
 
     

@@ -109,6 +109,7 @@ class XLSX2CSVComponent(AsyncComponent):
         max_col = 0
         data = []
 
+
         for cell in xml_tree.getroot().findall("main:sheetData/main:row/main:c", cls.__namespace):
             cell_reference = cell.get("r")
             cell_row = int(''.join(filter(str.isdigit, cell_reference)))
@@ -148,7 +149,11 @@ class XLSX2CSVComponent(AsyncComponent):
             for sheet_id, sheetname, sheet_rid in worksheets:
                 cls.log_info("Reading workbook[{}] worksheet[{}]".format("{}.{}".format(file_basename, file_extension), sheetname))
                 with zip_file.open('xl/{}'.format(relations[sheet_rid])) as xml:
+                    # Multiprocessing only on component level, if any sublevel multiprocessing
+                    # It should be responsible from the component logic
+                    # It will not related to the config file
                     data, num_rows, num_cols = cls.read_worksheet(ET.parse(xml), shared_strings)
+
                     matrix = [[None] * num_cols for _ in range(num_rows)]
                     
                     for value, index_row, index_col in data:

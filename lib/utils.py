@@ -21,6 +21,14 @@ def create_if_not_exists_folders(folders):
     for folder in folders:
         if not os.path.exists(folder):
             os.makedirs(folder)
+
+######################## MEMORY
+
+# Read a file line by line without loading the entire file into memory
+def read_file_line_by_line(filepath):
+    with open(filepath, "r") as fr:
+        for line in fr:
+            yield line.strip()
             
 ######################## JSON
 

@@ -40,7 +40,7 @@ class XLSX2CSVComponent(AsyncComponent):
 
         files = [ filepath for filepath in files if filepath.endswith(".xlsx")]
         if len(files) == 0:
-            raise ImportError("No xlsx files found")
+            raise ImportError("No .xlsx files found")
 
         return files
         

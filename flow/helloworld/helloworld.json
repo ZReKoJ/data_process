@@ -33,6 +33,13 @@
             "script": "xlsx2csv.py",
             "type": "component"
         },
+        "C004": {
+            "name": "filter",
+            "config": {
+            },
+            "script": "csv_filter.py",
+            "type": "component"
+        },
         "C005": {
             "name": "shell",
             "config": {
@@ -60,6 +67,9 @@
         ],
         "C003": [
             "C002"
+        ],
+        "C004": [
+            "C003"
         ]
     },
     "LOGGING_LEVEL": "INFO",

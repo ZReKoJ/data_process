@@ -4,10 +4,12 @@ import sys
 import os
 import time 
 
+import concurrent.futures
+
 # Add the lib directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 
-from utils import read_file_line_by_line
+from utils import read_file_line_by_line, FileWriter
 from data_process_lib import AsyncComponent
 
 class CSVFilterComponent(AsyncComponent):
@@ -53,13 +55,33 @@ class CSVFilterComponent(AsyncComponent):
 
         self.log_info("Start Process")
 
-        file_writer = self.FileWriter(mode="w")
+        file_writer = FileWriter(mode="a")
+
+        futures = []
 
         for filepath in self._data:
+            
+            file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
+            output_filepath = os.path.join(self._OUTPUT_PATH, "{}_filtered{}".format(file_basename, file_extension))
+            read_header = False
+
             for line in read_file_line_by_line(filepath):
-                if self.check_line(line):
-                    file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
-                    file_writer.write(os.path.join(self._OUTPUT_PATH, "{}_filtered{}".format(file_basename, file_extension)), line)
+                if not read_header and self._config["header"]:
+                    read_header = True
+                    with open(output_filepath, "w") as fw:
+                        fw.write("{}\n".format(line))
+                else:
+                    if self.check_line(line):
+                        future = self._executor.submit(
+                            file_writer.write,
+                            output_filepath, 
+                            line
+                        )
+                        futures.append(future)
+
+        for future in concurrent.futures.as_completed(futures):
+            # Just to trigger exceptions if any
+            future.result()
 
         file_writer.shutdown()
 

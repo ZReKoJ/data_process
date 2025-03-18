@@ -6,7 +6,6 @@ import shutil
 import re
 
 from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import Process, Manager
 from collections import OrderedDict
 from utils import json_raise_on_duplicates
 from logging.config import fileConfig
@@ -197,40 +196,6 @@ class AsyncComponent(Component):
         config["WORKERS"] = config.get("WORKERS", 10)
 
         return config
-
-    class FileWriter(object):
-
-        def __init__(self, mode="a"):
-            self.__mode = mode
-            self.__queue = Manager().Queue()
-            self.__process = Process(target=self.__process_queue)
-            self.__process.start()
-
-        def __process_queue(self):
-
-            file_handler = {}
-
-            while True:
-                filepath, line = self.__queue.get()
-                
-                if filepath is None and line is None: # Shutdown
-                    break
-                
-                if filepath not in file_handler:
-                    file_handler[filepath] = open(filepath, self.__mode)
-
-                file_handler[filepath].write("{}\n".format(line))
-                file_handler[filepath].flush()
-
-            for fw in file_handler.values():
-                fw.close()
-
-        def shutdown(self):
-            self.__queue.put((None, None))
-            self.__process.join()
-
-        def write(self, filepath, line):
-            self.__queue.put((filepath, line))
 
     def process(self):
         super().process()

@@ -7,6 +7,7 @@ import random
 import string
 
 from logging.config import fileConfig
+from multiprocessing import Process, Manager
 
 ######################## DATES
 
@@ -47,6 +48,44 @@ def json_raise_on_duplicates(key_value_pairs, not_check=[], dictionary_type=dict
                 registered_keys[key] = value
     
     return registered_keys
+
+######################## ASYNC
+
+class FileWriter(object):
+
+    __queue = Manager().Queue()
+
+    def __init__(self, mode="a"):
+        self.__mode = mode
+        self.__process = Process(target=self.__process_queue)
+        self.__process.start()
+
+    def __process_queue(self):
+
+        file_handler = {}
+
+        while True:
+            filepath, line = self.__queue.get()
+            
+            if filepath is None and line is None: # Shutdown
+                break
+            
+            if filepath not in file_handler:
+                file_handler[filepath] = open(filepath, self.__mode)
+
+            file_handler[filepath].write("{}\n".format(line))
+            file_handler[filepath].flush()
+
+        for fw in file_handler.values():
+            fw.close()
+
+    def shutdown(self):
+        self.__queue.put((None, None))
+        self.__process.join()
+
+    @classmethod
+    def write(cls, filepath, line):
+        cls.__queue.put((filepath, line))
             
 ######################## PROGRAM ENTITIES
 

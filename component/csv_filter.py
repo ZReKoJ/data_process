@@ -55,7 +55,7 @@ class CSVFilterComponent(AsyncComponent):
 
         self.log_info("Start Process")
 
-        file_writer = FileWriter(mode="a")
+        file_writer = FileWriter(mode="a" if self._config["header"] else "w")
 
         futures = []
 

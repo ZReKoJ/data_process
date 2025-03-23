@@ -3,16 +3,20 @@
 import sys
 import os
 import time 
+import re
 
 import concurrent.futures
 
 # Add the lib directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 
-from utils import read_file_line_by_line, FileWriter
+from utils import read_file_line_by_line, FileWriter, UtilityFunction
 from data_process_lib import AsyncComponent
 
 class CSVFilterComponent(AsyncComponent):
+
+    __CONDITION_FUNCTION_REGEX = '(\\w+)\\(([^)]+)\\)'
+    __CONDITION_PARAMETER_REGEX = '\\$(\\w+)'
 
     def __init__(self):
         super().__init__()
@@ -42,12 +46,53 @@ class CSVFilterComponent(AsyncComponent):
         # Default Setting 
         config["delimiter"] = config.get("delimiter", "|")
         config["header"] = config.get("header", True)
+        config["conditions"] = config.get("conditions", [])
 
         return config
 
     @classmethod
-    def check_line(cls, line):
-        return True
+    def check_line(cls, line, conditions):
+        # First loop is OR clause
+        for or_condition in conditions:
+
+            result = True 
+
+            # Second loop is AND clause
+            for and_condition in or_condition:
+                function = re.match(cls.__CONDITION_FUNCTION_REGEX, and_condition)
+
+                function_name = function.group(1)
+                function_parameters = []
+
+                for param in function.group(2).split(","):
+                    parameter = param.strip()
+
+                    # Check if has index
+                    index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
+                    if index_name:
+                        index_value = index_name.group(1)
+                        index = int(index_value) if index_value.isdigit() else int(index_value)
+
+                        # list starts with index 0
+                        function_parameters.append(line[index - 1])
+                        continue
+                    
+                    # Check if it is a string ('')
+                    if parameter.startswith("'") and parameter.endswith("'"):
+                        function_parameters.append(parameter.strip("'"))
+                        continue
+
+                    function_parameters.append(parameter)
+                    
+                result = result and UtilityFunction.predicate(function_name)(*function_parameters)
+
+                # if after any iteration the result for one is False, it means in and clause it will be False so directly break the loop
+                if not result:
+                    break
+
+            # if after any iteration the result for one is True, it means in or clause it will be True so directly return True
+            if result:
+                return True
         
     # Abstract from parent
     def process(self):
@@ -71,12 +116,10 @@ class CSVFilterComponent(AsyncComponent):
                     with open(output_filepath, "w") as fw:
                         fw.write("{}\n".format(line))
                 else:
-                    if self.check_line(line):
-                        future = self._executor.submit(
-                            file_writer.write,
-                            output_filepath, 
-                            line
-                        )
+                    future = self._executor.submit(self.check_line, line.split(self._config["delimiter"]), self._config["conditions"])
+                    # Check if __check_line returns true
+                    if future.result():
+                        future = self._executor.submit(file_writer.write, output_filepath, line)
                         futures.append(future)
 
         for future in concurrent.futures.as_completed(futures):

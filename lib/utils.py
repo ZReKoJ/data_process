@@ -134,14 +134,59 @@ def flatten(data, values=[]):
         copy_values.append(str(data))
         yield copy_values
 
-def generate_value(function_name):
-    return ValueGenerator.get_function(function_name)
-
 ######################## CLASS
 
-class ValueGenerator:
+class UtilityFunction:
+    
+    @staticmethod
+    def predicate(function_name):
+        callable_function = next((
+            function
+            for name, function
+            in get_functions(UtilityFunction.PredicateFunction)
+            if name == function_name
+        ), None)
 
-    class __Functions:
+        if not callable_function:
+            raise NotImplementedError("{} function is not implemented".format(function_name))
+
+        return callable_function
+
+    @staticmethod
+    def generate_value(function_name):
+        callable_function = next((
+            function
+            for name, function
+            in get_functions(UtilityFunction.GeneratorFunction)
+            if name == function_name
+        ), None)
+
+        if not callable_function:
+            raise NotImplementedError("{} function is not implemented".format(function_name))
+
+        return callable_function
+
+    class PredicateFunction:
+
+        def equals(x, y):
+            return x == y
+
+        def greater_than(x, y):
+            return x > y
+
+        def greater_equal(x, y):
+            return x >= y
+
+        def less_than(x, y):
+            return x < y
+
+        def less_equal(x, y):
+            return x <= y
+
+        def not_equals(x, y):
+            return x != y
+
+    class GeneratorFunction:
 
         def incremental_1(value):
             return str(int(value) + 1).rjust(len(value), '0')
@@ -215,20 +260,3 @@ class ValueGenerator:
             is_dst = time.daylight and time.localtime().tm_isdst > 0
             utc_offset = -(time.altzone if is_dst else time.timezone) / 60 / 60
             return "+" if utc_offset > 0 else "-" + str(int(utc_offset) * 100).rjust(4, '0')
-
-    @staticmethod
-    def get_function(function_name):
-        callable_function = next((
-            function
-            for name, function
-            in get_functions(ValueGenerator.__Functions)
-            if name == function_name
-        ), None)
-
-        if not callable_function:
-            raise NotImplementedError("{} function is not implemented".format(function_name))
-
-        return callable_function
-
-
-                

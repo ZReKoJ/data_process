@@ -211,9 +211,6 @@ def parse_arguments():
     return args
 
 if __name__ == '__main__': 
-
-    (generate_value("incremental_1")("002"))
-
     args = parse_arguments()
     data_process = DataProcessExecutor(args)
     data_process.run()

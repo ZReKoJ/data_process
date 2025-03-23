@@ -21,26 +21,64 @@
                 "match": [
                     ".*.xlsx"
                 ]
-
             },
             "script": "copy_files.py",
             "type": "component"
         },
         "C003": {
             "name": "read_excel",
-            "config": {
-            },
+            "config": {},
             "script": "xlsx2csv.py",
             "type": "component"
         },
         "C004": {
             "name": "filter",
             "config": {
+                "conditions": [
+                    [
+                        "equals($2, 'aaa')",
+                        "greater_than($1, 0)"
+                    ],
+                    [
+                        "equals($2, 'bbb')"
+                    ]
+                ],
+                "delimiter" : ","
             },
             "script": "csv_filter.py",
             "type": "component"
         },
         "C005": {
+            "name": "copy_link",
+            "config": {
+                "match": [
+                    ".*_link.*csv"
+                ]
+            },
+            "script": "copy_files.py",
+            "type": "component"
+        },
+        "C006": {
+            "name": "copy_number",
+            "config": {
+                "match": [
+                    ".*_number.*csv"
+                ]
+            },
+            "script": "copy_files.py",
+            "type": "component"
+        },
+        "C007": {
+            "name": "copy_text",
+            "config": {
+                "match": [
+                    ".*_text.*csv"
+                ]
+            },
+            "script": "copy_files.py",
+            "type": "component"
+        },
+        "C0059": {
             "name": "shell",
             "config": {
                 "variables": {},
@@ -52,7 +90,7 @@
             "script": "command.py",
             "type": "component"
         },
-        "C008": {
+        "C0089": {
             "name": "sleep",
             "config": {
                 "seconds": 1
@@ -62,14 +100,20 @@
         }
     },
     "dependencies": {
-        "C008": [
-            "C005"
-        ],
         "C003": [
             "C002"
         ],
-        "C004": [
+        "C005": [
             "C003"
+        ],
+        "C006": [
+            "C003"
+        ],
+        "C007": [
+            "C003"
+        ],
+        "C004": [
+            "C005"
         ]
     },
     "LOGGING_LEVEL": "INFO",

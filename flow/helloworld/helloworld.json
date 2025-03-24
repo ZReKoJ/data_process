@@ -78,6 +78,13 @@
             "script": "copy_files.py",
             "type": "component"
         },
+        "C008": {
+            "name": "join_by_id",
+            "config": {
+            },
+            "script": "csv_joiner.py",
+            "type": "component"
+        },
         "C0059": {
             "name": "shell",
             "config": {
@@ -114,6 +121,9 @@
         ],
         "C004": [
             "C005"
+        ],
+        "C008": [
+            "C005", "C006", "C007"
         ]
     },
     "LOGGING_LEVEL": "INFO",

@@ -91,7 +91,7 @@ class Component(object):
         for logger in cls._loggers.values():
             logger.exception(message)
 
-    def init(self):
+    def init(self, tmp=False):
         self._node_info = self._read_flow(self._FLOW_CONFIG)
         self._config = self._read_config(self._node_info)
 
@@ -99,6 +99,9 @@ class Component(object):
 
         self._OUTPUT_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "_".join([self.whoami(), self._node_info["name"]]))
         self._INPUT_PATH = self._args["input"]
+        self._TMP_PATH = None
+        if tmp:
+            self._TMP_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "." + "_".join([self.whoami(), self._node_info["name"]]))
 
         self._data = self._read_input(self._INPUT_PATH)
 
@@ -149,6 +152,11 @@ class Component(object):
             self.log_info("Output folder exists, proceed empty data")
             shutil.rmtree(self._OUTPUT_PATH)
         os.makedirs(self._OUTPUT_PATH)
+        if self._TMP_PATH:
+            if os.path.exists(self._TMP_PATH):
+                self.log_info("Output folder exists, proceed empty data")
+                shutil.rmtree(self._TMP_PATH)
+            os.makedirs(self._TMP_PATH)
 
     def get_args(self):
         return self._args

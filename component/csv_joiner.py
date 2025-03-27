@@ -24,21 +24,27 @@ class CSVJoinerComponent(AsyncComponent):
 
     # Abstract from parent
     def _read_input(self, input_list):
-        files = []
 
-        for input_record in input_list:
-            if os.path.isdir(input_record):
-                files = files + [ os.path.join(root, filename) for root, dirs, files in os.walk(input_record) if len(files) > 0 for filename in files ]
-            elif os.path.isfile(input_record):
-                files.append(input_record)
-            else:
-                raise ImportError("Path {} is incorrect".format(input_record))
+        if len(input_list) > 1:
+            data = list(map(
+                    lambda path : [
+                        os.path.join(root, filename) 
+                        for root, dirs, files 
+                        in os.walk(path) 
+                        if len(files) > 0 
+                            for filename in files 
+                            if filename.endswith(".csv")
+                    ], 
+                    input_list
+                ))
 
-        files = [ filepath for filepath in files if filepath.endswith(".csv")]
-        if len(files) == 0:
-            raise ImportError("No .csv files found")
+            for idx, files in enumerate(data):
+                if len(files) == 0:
+                    raise ImportError("No .csv files found for the input {}".format(idx))
 
-        return files
+            return data
+
+        raise AssertionError("Component expects 1+ inputs and {} is provided".format(len(input_list)))
         
     # Abstract from parent
     def _read_config(self, node_info):
@@ -60,8 +66,8 @@ class CSVJoinerComponent(AsyncComponent):
 
         futures = []
 
-        for filepath in self._data:
-            print(filepath)
+        for input_idx, files in enumerate(self._data):
+            print(input_idx, files)
 
         file_writer.shutdown()
 

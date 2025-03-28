@@ -10,10 +10,10 @@ import concurrent.futures
 # Add the lib directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 
-from utils import FileWriter
-from data_process_lib import AsyncComponent
+from utils import FileWriter, MakeItPicklableWrapper
+from data_process_lib import SortComponent
 
-class CSVJoinerComponent(AsyncComponent):
+class CSVJoinerComponent(SortComponent):
 
     def __init__(self):
         super().__init__()
@@ -51,7 +51,7 @@ class CSVJoinerComponent(AsyncComponent):
         config = super()._read_config(node_info)
 
         # Default Setting 
-        config["delimiter"] = config.get("delimiter", "|")
+        config["delimiter"] = config.get("delimiter", ",")
         config["header"] = config.get("header", True)
 
         return config
@@ -67,11 +67,29 @@ class CSVJoinerComponent(AsyncComponent):
         futures = []
 
         for input_idx, files in enumerate(self._data):
-            print(input_idx, files)
+            sorted_files = [ 
+                self._sort_file(
+                    filepath, 
+                    has_header=self._config["header"],
+                    key=MakeItPicklableWrapper(self.get_key).add_args(
+                        self._config["key"][input_idx], 
+                        self._config["delimiter"]
+                    )
+                )
+                for filepath 
+                in files 
+            ]
+            print(sorted_files)
 
         file_writer.shutdown()
 
         self.log_info("End Process")
+
+    @classmethod
+    def get_key(cls, line, index_list, delimiter):
+        csv_line = line.split(delimiter)
+        # idx - 1, starts with 0 the list, and passed variable starts with 1
+        return delimiter.join([ csv_line[idx - 1] for idx in index_list])
 
 if __name__ == "__main__":
     try:

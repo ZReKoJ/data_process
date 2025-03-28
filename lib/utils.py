@@ -136,6 +136,24 @@ def flatten(data, values=[]):
 
 ######################## CLASS
 
+# A wrapper class to store and apply a picklable function.
+class MakeItPicklableWrapper:
+    def __init__(self, key_func):
+        self.__args = []
+        self.__kwargs = {}
+        self.__key_func = key_func  # Store the function
+
+    def add_args(self, *args):
+        self.__args = args
+        return self
+
+    def add_kwargs(self, **kwargs):
+        self.__kwargs = kwargs
+        return self
+
+    def __call__(self, data):
+        return self.__key_func(data, *self.__args, **self.__kwargs)  # Make it callable
+
 class UtilityFunction:
     
     @staticmethod

@@ -4,6 +4,7 @@ import sys
 import os
 import time 
 import re
+import heapq
 
 import concurrent.futures
 
@@ -62,12 +63,10 @@ class CSVJoinerComponent(SortComponent):
 
         self.log_info("Start Process")
 
-        file_writer = FileWriter(mode="a" if self._config["header"] else "w")
-
-        futures = []
+        sorted_files = []
 
         for input_idx, files in enumerate(self._data):
-            sorted_files = [ 
+            sorted_files.append([ 
                 self._sort_file(
                     filepath, 
                     has_header=self._config["header"],
@@ -78,10 +77,95 @@ class CSVJoinerComponent(SortComponent):
                 )
                 for filepath 
                 in files 
-            ]
-            print(sorted_files)
+            ])
+        
+        output_filepath = os.path.join(self._OUTPUT_PATH, "{}_joined.csv".format("_".join([self.whoami(), self._node_info["name"]])))
 
-        file_writer.shutdown()
+        file_handlers = [
+            [ 
+                open(sorted_file, "r")
+                for sorted_file 
+                in sorted_files_list
+            ]
+            for sorted_files_list 
+            in sorted_files
+        ]
+
+        fw = open(output_filepath, "w")
+
+        # Read header
+        if self._config["header"]:
+            # Write only once the header if many files for the same input
+            header = []
+            for file_handler_list in file_handlers:
+                written_header = False
+                for fr in file_handler_list:
+                    line = fr.readline().strip()
+                    if line and not written_header:
+                        header.append(line)
+                        written_header = True
+            fw.write("{}\n".format(self._config["delimiter"].join(header)))
+
+        # Initialize heaps
+        queues = []
+        for input_idx, file_handler_list in enumerate(file_handlers):
+            queues.append([])
+            for file_handler_idx, fr in enumerate(file_handler_list):
+                line = fr.readline().strip()
+                if line:
+                    heapq.heappush(queues[input_idx], (
+                        self.get_key(line, self._config["key"][input_idx], self._config["delimiter"]), 
+                        input_idx,
+                        file_handler_idx, 
+                        line
+                    ))
+
+        # Join Loop
+        join_line = []
+
+        while sum([ len(queue) for queue in queues]) > 0:
+            # cursor is the length of the array
+            cursor = len(join_line)
+            if cursor < len(sorted_files):
+                # If not value in queue means the iteration ends
+                if len(queues[cursor]) == 0:
+                    join_line.pop()
+                    continue
+
+                key, input_idx, file_handler_idx, line = heapq.heappop(queues[cursor])
+                # defines the first key
+                if cursor == 0:
+                    join_key = key
+
+                if key == join_key:
+                    join_line.append(line)
+
+                    newline = file_handlers[input_idx][file_handler_idx].readline().strip()
+                    if newline:
+                        heapq.heappush(queues[cursor], (
+                            self.get_key(newline, self._config["key"][input_idx], self._config["delimiter"]), 
+                                input_idx,
+                                file_handler_idx, 
+                                newline
+                            ))
+                else:
+                    # get last and return to queue
+                    join_line.pop()
+                    heapq.heappush(queues[cursor], (
+                        self.get_key(newline, self._config["key"][input_idx], self._config["delimiter"]), 
+                            input_idx,
+                            file_handler_idx, 
+                            line
+                        ))
+            else:
+                fw.write("{}\n".format(self._config["delimiter"].join(join_line)))
+                join_line.pop()
+
+        fw.close()
+
+        for file_handler_list in file_handlers:
+            for fr in file_handler_list:
+                fr.close()
 
         self.log_info("End Process")
 

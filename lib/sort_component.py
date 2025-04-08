@@ -71,6 +71,12 @@ class SortComponent(AsyncComponent):
 
         # As only one writer, not concurrency on this part
         output_filepath = os.path.join(self._TMP_PATH, os.path.basename(os.path.normpath(filepath)))
+
+        # Add header
+        if has_header and header:
+            with open(output_filepath, "w") as fw:
+                fw.write("{}\n".format(header))
+
         self._generate_sorted_file_by_temp_files(output_filepath, temp_files, key=key)
         return output_filepath
 
@@ -87,7 +93,7 @@ class SortComponent(AsyncComponent):
     def _generate_sorted_file_by_temp_files(cls, output_filepath, temp_files, key=None):
         key = key if key else lambda line : line
 
-        with open(output_filepath, "w") as fw:
+        with open(output_filepath, "a") as fw:
             file_handles = [ open(temp_file, "r") for temp_file in temp_files ]
 
             queue = []

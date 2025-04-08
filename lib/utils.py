@@ -123,6 +123,8 @@ def get_functions(class_type, filters=[
 def flatten(data, values=[]):
     copy_values = copy.deepcopy(values)
 
+    print("aa", data)
+
     if isinstance(data, dict):
         for key, value in data.items():
             copy_values.append(key)

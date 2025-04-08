@@ -152,7 +152,7 @@ class Component(object):
             shutil.rmtree(self._OUTPUT_PATH)
         os.makedirs(self._OUTPUT_PATH)
         if self._TMP_PATH:
-            self.log_info("Output folder: {}".format(self._TMP_PATH))
+            self.log_info("Tmp folder: {}".format(self._TMP_PATH))
             if os.path.exists(self._TMP_PATH):
                 self.log_info("Tmp folder exists, proceed empty data")
                 shutil.rmtree(self._TMP_PATH)

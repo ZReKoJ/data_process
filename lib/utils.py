@@ -123,8 +123,6 @@ def get_functions(class_type, filters=[
 def flatten(data, values=[]):
     copy_values = copy.deepcopy(values)
 
-    print("aa", data)
-
     if isinstance(data, dict):
         for key, value in data.items():
             copy_values.append(key)
@@ -280,3 +278,18 @@ class UtilityFunction:
             is_dst = time.daylight and time.localtime().tm_isdst > 0
             utc_offset = -(time.altzone if is_dst else time.timezone) / 60 / 60
             return "+" if utc_offset > 0 else "-" + str(int(utc_offset) * 100).rjust(4, '0')
+
+        def count(array_list):
+            return len(array_list)
+
+        # independently of the depth of the array
+        def sum(array_list):
+            total = 0
+            for item in array_list:
+                if isinstance(item, list):
+                    total += UtilityFunction.GeneratorFunction.sum(item)
+                elif isinstance(item, int):
+                    total += item
+                else:
+                    total += int(item)
+            return total

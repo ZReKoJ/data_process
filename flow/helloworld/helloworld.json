@@ -43,7 +43,7 @@
                         "equals($2, 'bbb')"
                     ]
                 ],
-                "delimiter" : ","
+                "delimiter": ","
             },
             "script": "csv_filter.py",
             "type": "component"
@@ -81,13 +81,33 @@
         "C008": {
             "name": "join_by_id",
             "config": {
-                "key" : [
-                    [1],
-                    [1],
-                    [1]
+                "key": [
+                    [
+                        1
+                    ],
+                    [
+                        1
+                    ],
+                    [
+                        1
+                    ]
                 ]
             },
             "script": "csv_joiner.py",
+            "type": "component"
+        },
+        "C009": {
+            "name": "aggregate_by_id",
+            "config": {
+                "key": [
+                    1
+                ],
+                "conditions": [
+                    "count($2)",
+                    "sum($1)"
+                ]
+            },
+            "script": "csv_aggregator.py",
             "type": "component"
         },
         "C0059": {
@@ -128,7 +148,12 @@
             "C005"
         ],
         "C008": [
-            "C005", "C006", "C007"
+            "C005",
+            "C006",
+            "C007"
+        ],
+        "C009": [
+            "C008"
         ]
     },
     "LOGGING_LEVEL": "INFO",

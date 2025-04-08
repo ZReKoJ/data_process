@@ -71,7 +71,8 @@ class CSVFilterComponent(AsyncComponent):
                     index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
                     if index_name:
                         index_value = index_name.group(1)
-                        index = int(index_value) if index_value.isdigit() else int(index_value)
+                        # if line is digit or dict
+                        index = int(index_value) if index_value.isdigit() else index_value
 
                         # list starts with index 0
                         function_parameters.append(line[index - 1])

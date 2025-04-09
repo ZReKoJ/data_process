@@ -110,6 +110,16 @@
             "script": "csv_aggregator.py",
             "type": "component"
         },
+        "C010": {
+            "name": "conversion",
+            "config": {
+                "conditions": [
+                    "row_replace($3, 2, $3, 'aaa')"
+                ]
+            },
+            "script": "csv_converter.py",
+            "type": "component"
+        },
         "C0059": {
             "name": "shell",
             "config": {
@@ -154,6 +164,9 @@
         ],
         "C009": [
             "C008"
+        ],
+        "C010": [
+            "C009"
         ]
     },
     "LOGGING_LEVEL": "INFO",

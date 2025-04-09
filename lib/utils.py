@@ -293,3 +293,8 @@ class UtilityFunction:
                 else:
                     total += int(item)
             return total
+
+        def row_replace(array_list, check_column, check_value, replace_column, replace_value):
+            if array_list[check_column] == check_value:
+                array_list[replace_column] = replace_value
+            return array_list

@@ -302,29 +302,34 @@ class UtilityFunction:
         # csv_converter.py #
         ####################
         
-        def csv_converter_row_replace(array_list, check_column, check_value, replace_column, replace_value, is_header=False):
-            if array_list[check_column] == check_value:
-                array_list[replace_column] = replace_value
-            return array_list
+        def csv_converter_row_replace(dictionary, check_column, check_value, replace_column, replace_value, is_header=False):
+            if dictionary[check_column] == check_value:
+                dictionary[replace_column] = replace_value
+            return dictionary
 
-        def csv_converter_digit_sum(array_list, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+        def csv_converter_digit_sum(dictionary, pos_res, pos_sum_x, pos_sum_y, is_header=False):
             if is_header:
-                return array_list
-            array_list[pos_res] = int(array_list[pos_sum_x]) + int(array_list[pos_sum_y])
-            return [ str(item) for item in array_list ]
+                return dictionary
+            dictionary[pos_res] = int(dictionary[pos_sum_x]) + int(dictionary[pos_sum_y])
+            return dictionary
 
-        def csv_converter_append_field(array_list, field_name, default_value, is_header=False):
+        def csv_converter_append_field(dictionary, field_name, default_value, is_header=False):
+            if field_name in dictionary:
+                raise AssertionError("Key {} exists in {}".format(field_name, dictionary))
+
             if is_header:
                 default_value = field_name
-            return array_list + [default_value] 
+            dictionary[field_name] = default_value
 
-        def csv_converter_change_field_name(array_list, position, field_name, is_header=False):
-            if is_header:
-                array_list[position] = field_name
-            return array_list
+            return dictionary
 
-        def csv_converter_string_sum(array_list, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+        def csv_converter_change_field_name(dictionary, position, field_name, is_header=False):
             if is_header:
-                return array_list
-            array_list[pos_res] = str(array_list[pos_sum_x]) + str(array_list[pos_sum_y])
-            return array_list
+                dictionary[position] = field_name
+            return dictionary
+
+        def csv_converter_string_sum(dictionary, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+            if is_header:
+                return dictionary
+            dictionary[pos_res] = str(dictionary[pos_sum_x]) + str(dictionary[pos_sum_y])
+            return dictionary

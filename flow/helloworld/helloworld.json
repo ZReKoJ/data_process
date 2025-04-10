@@ -116,7 +116,9 @@
                 "conditions": [
                     "row_replace($3, 2, $3, 'aaa')",
                     "append_field('new_field', 'zzz')",
-                    "digit_sum($4, $1, $2)"
+                    "digit_sum($4, $1, $2)",
+                    "append_field('new_field_2', 'zzz')",
+                    "digit_sum($new_field_2, $1, $1)"
                 ]
             },
             "script": "csv_converter.py",

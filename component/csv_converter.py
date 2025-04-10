@@ -6,6 +6,7 @@ import time
 import re
 
 import concurrent.futures
+from collections import OrderedDict
 
 # Add the lib directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
@@ -68,11 +69,12 @@ class CSVConverterComponent(AsyncComponent):
                 index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
                 if index_name:
                     index_value = index_name.group(1)
-                    # if line is digit or dict
-                    index = int(index_value) if index_value.isdigit() else index_value
+                    # if line is digit or str
 
                     # list starts with index 0
-                    function_parameters.append(index - 1)
+                    index = list(line.keys())[int(index_value) - 1] if index_value.isdigit() else index_value
+
+                    function_parameters.append(index)
                     continue
                 
                 # Check if it is a string ('')
@@ -84,8 +86,7 @@ class CSVConverterComponent(AsyncComponent):
                 
             line = UtilityFunction.generate_value(function_name)(line, *function_parameters, is_header=is_header)
 
-        return line
-
+        return [ str(item) for item in line.values() ]
         
     # Abstract from parent
     def process(self):
@@ -104,12 +105,25 @@ class CSVConverterComponent(AsyncComponent):
             header = None
 
             for line in read_file_line_by_line(filepath):
+                line = OrderedDict(
+                    (str(idx), field) 
+                    for idx, field 
+                    in enumerate(line.split(self._config["delimiter"]))
+                )
                 if not header and self._config["header"]:
-                    header = self.convert_line(line.split(self._config["delimiter"]), self._config["conditions"], is_header=True)
+                    header = self.convert_line(
+                        line,
+                        self._config["conditions"], 
+                        is_header=True
+                    )
                     with open(output_filepath, "w") as fw:
                         fw.write("{}\n".format(self._config["delimiter"].join(header)))
                 else:
-                    future = self._executor.submit(self.convert_line, line.split(self._config["delimiter"]), self._config["conditions"])
+                    future = self._executor.submit(
+                        self.convert_line, 
+                        line,
+                        self._config["conditions"]
+                    )
                     # Convert the line
                     converted_line = future.result()
                     future = self._executor.submit(file_writer.write, output_filepath, self._config["delimiter"].join(converted_line))

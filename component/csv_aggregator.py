@@ -18,6 +18,7 @@ class CSVAggregatorComponent(SortComponent):
 
     __CONDITION_FUNCTION_REGEX = '(\\w+)\\(([^)]+)\\)'
     __CONDITION_PARAMETER_REGEX = '\\$(\\w+)'
+    __CLASS_ID = "csv_aggregator"
 
     def __init__(self):
         super().__init__()
@@ -156,6 +157,9 @@ class CSVAggregatorComponent(SortComponent):
             function = re.match(cls.__CONDITION_FUNCTION_REGEX, condition)
 
             function_name = function.group(1)
+            if cls.__CLASS_ID not in function_name:
+                function_name = "_".join([cls.__CLASS_ID, function_name])
+
             function_parameters = [ parameter.strip() for parameter in function.group(2).split(",")]
 
             converted_array_list = []

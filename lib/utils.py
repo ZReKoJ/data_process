@@ -279,22 +279,41 @@ class UtilityFunction:
             utc_offset = -(time.altzone if is_dst else time.timezone) / 60 / 60
             return "+" if utc_offset > 0 else "-" + str(int(utc_offset) * 100).rjust(4, '0')
 
-        def count(array_list):
-            return len(array_list)
+        #####################
+        # csv_aggregator.py #
+        #####################
 
-        # independently of the depth of the array
-        def sum(array_list):
+        # sum of the depth of the array
+        def csv_aggregator_sum(array_list):
             total = 0
             for item in array_list:
                 if isinstance(item, list):
-                    total += UtilityFunction.GeneratorFunction.sum(item)
+                    total += UtilityFunction.GeneratorFunction.csv_aggregator_sum(item)
                 elif isinstance(item, int):
                     total += item
                 else:
                     total += int(item)
             return total
 
-        def row_replace(array_list, check_column, check_value, replace_column, replace_value):
+        def csv_aggregator_count(array_list):
+            return len(array_list)
+
+        ####################
+        # csv_converter.py #
+        ####################
+        
+        def csv_converter_row_replace(array_list, check_column, check_value, replace_column, replace_value, is_header=False):
             if array_list[check_column] == check_value:
                 array_list[replace_column] = replace_value
             return array_list
+
+        def csv_converter_digit_sum(array_list, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+            if is_header:
+                return array_list
+            array_list[pos_res] = int(array_list[pos_sum_x]) + int(array_list[pos_sum_y])
+            return [ str(item) for item in array_list ]
+
+        def csv_converter_append_field(array_list, field_name, default_value, is_header=False):
+            if is_header:
+                default_value = field_name
+            return array_list + [default_value] 

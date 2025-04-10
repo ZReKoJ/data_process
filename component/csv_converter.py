@@ -17,6 +17,7 @@ class CSVConverterComponent(AsyncComponent):
 
     __CONDITION_FUNCTION_REGEX = '(\\w+)\\(([^)]+)\\)'
     __CONDITION_PARAMETER_REGEX = '\\$(\\w+)'
+    __CLASS_ID = "csv_converter"
 
     def __init__(self):
         super().__init__()
@@ -51,11 +52,13 @@ class CSVConverterComponent(AsyncComponent):
         return config
 
     @classmethod
-    def convert_line(cls, line, conditions):
+    def convert_line(cls, line, conditions, is_header=False):
         for condition in conditions:
             function = re.match(cls.__CONDITION_FUNCTION_REGEX, condition)
 
             function_name = function.group(1)
+            if cls.__CLASS_ID not in function_name:
+                function_name = "_".join([cls.__CLASS_ID, function_name])
             function_parameters = []
 
             for param in function.group(2).split(","):
@@ -79,9 +82,9 @@ class CSVConverterComponent(AsyncComponent):
 
                 function_parameters.append(parameter)
                 
-            result = UtilityFunction.generate_value(function_name)(line, *function_parameters)
+            line = UtilityFunction.generate_value(function_name)(line, *function_parameters, is_header=is_header)
 
-        return result
+        return line
 
         
     # Abstract from parent
@@ -98,13 +101,13 @@ class CSVConverterComponent(AsyncComponent):
             
             file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
             output_filepath = os.path.join(self._OUTPUT_PATH, "{}_converted{}".format(file_basename, file_extension))
-            read_header = False
+            header = None
 
             for line in read_file_line_by_line(filepath):
-                if not read_header and self._config["header"]:
-                    read_header = True
+                if not header and self._config["header"]:
+                    header = self.convert_line(line.split(self._config["delimiter"]), self._config["conditions"], is_header=True)
                     with open(output_filepath, "w") as fw:
-                        fw.write("{}\n".format(line))
+                        fw.write("{}\n".format(self._config["delimiter"].join(header)))
                 else:
                     future = self._executor.submit(self.convert_line, line.split(self._config["delimiter"]), self._config["conditions"])
                     # Convert the line

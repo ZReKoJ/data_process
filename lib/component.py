@@ -90,6 +90,9 @@ class Component(object):
         for logger in cls._loggers.values():
             logger.exception(message)
 
+    def get_class_name_snake_case(self):
+        return re.sub(r'([a-z]) ([A-Z])', r'\1_\2', self.__class__.__name__).lower()
+
     def init(self, tmp=False):
         self._node_info = self._read_flow(self._FLOW_CONFIG)
         self._config = self._read_config(self._node_info)

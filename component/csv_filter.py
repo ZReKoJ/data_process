@@ -6,6 +6,7 @@ import time
 import re
 
 import concurrent.futures
+from collections import OrderedDict
 
 # Add the lib directory to the sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
@@ -71,11 +72,12 @@ class CSVFilterComponent(AsyncComponent):
                     index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
                     if index_name:
                         index_value = index_name.group(1)
-                        # if line is digit or dict
-                        index = int(index_value) if index_value.isdigit() else index_value
 
                         # list starts with index 0
-                        function_parameters.append(line[index - 1])
+                        index = list(line.keys())[int(index_value) - 1] if index_value.isdigit() else index_value
+
+                        # list starts with index 0
+                        function_parameters.append(line[index])
                         continue
                     
                     # Check if it is a string ('')
@@ -109,18 +111,23 @@ class CSVFilterComponent(AsyncComponent):
             
             file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
             output_filepath = os.path.join(self._OUTPUT_PATH, "{}_filtered{}".format(file_basename, file_extension))
-            read_header = False
+            header = None
 
             for line in read_file_line_by_line(filepath):
-                if not read_header and self._config["header"]:
-                    read_header = True
+                line = OrderedDict(
+                    (str(idx) if not header else header[idx], field) 
+                    for idx, field 
+                    in enumerate(line.split(self._config["delimiter"]))
+                )
+                if not header and self._config["header"]:
+                    header = list(line.values())
                     with open(output_filepath, "w") as fw:
-                        fw.write("{}\n".format(line))
+                        fw.write("{}\n".format(self._config["delimiter"].join(header)))
                 else:
-                    future = self._executor.submit(self.check_line, line.split(self._config["delimiter"]), self._config["conditions"])
+                    future = self._executor.submit(self.check_line, line, self._config["conditions"])
                     # Check if __check_line returns true
                     if future.result():
-                        future = self._executor.submit(file_writer.write, output_filepath, line)
+                        future = self._executor.submit(file_writer.write, output_filepath, self._config["delimiter"].join(line.values()))
                         futures.append(future)
 
         for future in concurrent.futures.as_completed(futures):

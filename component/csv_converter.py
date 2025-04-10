@@ -106,7 +106,7 @@ class CSVConverterComponent(AsyncComponent):
 
             for line in read_file_line_by_line(filepath):
                 line = OrderedDict(
-                    (str(idx), field) 
+                    (str(idx) if not header else header[idx], field) 
                     for idx, field 
                     in enumerate(line.split(self._config["delimiter"]))
                 )

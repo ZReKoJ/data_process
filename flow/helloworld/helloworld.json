@@ -114,11 +114,11 @@
             "name": "conversion",
             "config": {
                 "conditions": [
-                    "row_replace($3, 2, $3, 'aaa')",
+                    "replace_value_by_other_value($3, 2, $3, 'aaa')",
                     "append_field('new_field', 'zzz')",
-                    "digit_sum($4, $1, $2)",
+                    "digit_sum($2, $1, $4)",
                     "append_field('new_field_2', 'zzz')",
-                    "digit_sum($new_field_2, $1, $1)"
+                    "digit_sum($1, $1, $new_field_2)"
                 ]
             },
             "script": "csv_converter.py",

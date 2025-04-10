@@ -302,12 +302,12 @@ class UtilityFunction:
         # csv_converter.py #
         ####################
         
-        def csv_converter_row_replace(dictionary, check_column, check_value, replace_column, replace_value, is_header=False):
-            if dictionary[check_column] == check_value:
+        def csv_converter_replace_value_by_other_value(dictionary, check_column, check_value, replace_column, replace_value, is_header=False):
+            if not is_header and dictionary[check_column] == check_value:
                 dictionary[replace_column] = replace_value
             return dictionary
 
-        def csv_converter_digit_sum(dictionary, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+        def csv_converter_digit_sum(dictionary, pos_sum_x, pos_sum_y, pos_res, is_header=False):
             if is_header:
                 return dictionary
             dictionary[pos_res] = int(dictionary[pos_sum_x]) + int(dictionary[pos_sum_y])
@@ -328,7 +328,7 @@ class UtilityFunction:
                 dictionary[position] = field_name
             return dictionary
 
-        def csv_converter_string_sum(dictionary, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+        def csv_converter_string_sum(dictionary, pos_sum_x, pos_sum_y, pos_res, is_header=False):
             if is_header:
                 return dictionary
             dictionary[pos_res] = str(dictionary[pos_sum_x]) + str(dictionary[pos_sum_y])

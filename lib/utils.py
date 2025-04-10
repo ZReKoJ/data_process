@@ -317,3 +317,14 @@ class UtilityFunction:
             if is_header:
                 default_value = field_name
             return array_list + [default_value] 
+
+        def csv_converter_change_field_name(array_list, position, field_name, is_header=False)
+            if is_header:
+                array_list[position] = field_name
+            return array_list
+
+        def csv_converter_string_sum(array_list, pos_res, pos_sum_x, pos_sum_y, is_header=False):
+            if is_header:
+                return array_list
+            array_list[pos_res] = str(array_list[pos_sum_x]) + str(array_list[pos_sum_y])
+            return array_list

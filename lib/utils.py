@@ -318,7 +318,7 @@ class UtilityFunction:
                 default_value = field_name
             return array_list + [default_value] 
 
-        def csv_converter_change_field_name(array_list, position, field_name, is_header=False)
+        def csv_converter_change_field_name(array_list, position, field_name, is_header=False):
             if is_header:
                 array_list[position] = field_name
             return array_list

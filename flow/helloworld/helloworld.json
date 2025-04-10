@@ -120,6 +120,21 @@
             "script": "csv_converter.py",
             "type": "component"
         },
+        "C011": {
+            "name": "matching",
+            "config": {
+                "key": [
+                    [
+                        1
+                    ],
+                    [
+                        1
+                    ]
+                ]
+            },
+            "script": "csv_matcher_compare_by_key.py",
+            "type": "component"
+        },
         "C0059": {
             "name": "shell",
             "config": {
@@ -166,6 +181,10 @@
             "C008"
         ],
         "C010": [
+            "C009"
+        ],
+        "C011": [
+            "C010",
             "C009"
         ]
     },

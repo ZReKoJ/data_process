@@ -109,7 +109,7 @@ class CSVConverterComponent(AsyncComponent):
                     future = self._executor.submit(self.convert_line, line.split(self._config["delimiter"]), self._config["conditions"])
                     # Convert the line
                     converted_line = future.result()
-                    future = self._executor.submit(file_writer.write, output_filepath, converted_line)
+                    future = self._executor.submit(file_writer.write, output_filepath, self._config["delimiter"].join(converted_line))
                     futures.append(future)
 
         for future in concurrent.futures.as_completed(futures):

@@ -118,21 +118,23 @@ def get_functions(class_type, filters=[
             
 ######################## DATA TRANSFORMATION
 
-# For any combination of list + dict, it unpacks the values and return by data depth
-# It should ensure all yield values are the same length, otherwise exception is triggered
-def flatten(data, values=[]):
-    copy_values = copy.deepcopy(values)
-
+# Flatten all kinds of nested data
+def flatten(data):
     if isinstance(data, dict):
         for key, value in data.items():
-            copy_values.append(key)
-            yield from flatten(value, copy_values)
+            yield key
+            if isinstance(value, (list, dict)):
+                yield from flatten(value)
+            else:
+                yield value
     elif isinstance(data, list):
-        for value in data:
-            yield from flatten(value, copy_values)
+        for item in data:
+            if isinstance(item, (list, dict)):
+                yield from flatten(item)
+            else:
+                yield item
     else:
-        copy_values.append(str(data))
-        yield copy_values
+        yield data
 
 ######################## CLASS
 

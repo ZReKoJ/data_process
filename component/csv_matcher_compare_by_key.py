@@ -129,12 +129,7 @@ class CSVMatcherCompareByKeyComponent(SortComponent):
 
         while sum([ len(queue) for queue in queues]) > 0:
 
-            for queue in queues:
-                print(queue)
-
             selected = [ heapq.heappop(queue) if len(queue) > 0 else None for queue in queues ] 
-
-            print("selected", selected)
 
             minimum = next(
                 iter(sorted(

@@ -160,7 +160,7 @@ class CSVJoinerComponent(SortComponent):
                     join_key = key
 
                 if key == join_key:
-                    join_line.append(line)
+                    join_line.append(line.split(self._config["input_delimiter"]))
 
                     newline = file_handlers[input_idx][file_handler_idx].readline().strip()
                     if newline:
@@ -184,7 +184,7 @@ class CSVJoinerComponent(SortComponent):
                             line
                         ))
             else:
-                fw.write("{}\n".format(self._config["output_delimiter"].join([join_key] + join_line)))
+                fw.write("{}\n".format(self._config["output_delimiter"].join(flatten([join_key] + join_line))))
                 join_line.pop()
 
         fw.close()

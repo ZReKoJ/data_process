@@ -50,7 +50,8 @@ class CSVAggregatorComponent(SortComponent):
         config = super()._read_config(node_info)
 
         # Default Setting 
-        config["delimiter"] = config.get("delimiter", ",")
+        config["input_delimiter"] = config.get("input_delimiter", ",")
+        config["output_delimiter"] = config.get("output_delimiter", ",")
         config["header"] = config.get("header", True)
 
         return config
@@ -67,7 +68,7 @@ class CSVAggregatorComponent(SortComponent):
                 has_header=self._config["header"],
                 key=MakeItPicklableWrapper(self.get_key).add_args(
                     self._config["key"], 
-                    self._config["delimiter"]
+                    self._config["input_delimiter"]
                 )
             )
             for filepath 
@@ -88,10 +89,10 @@ class CSVAggregatorComponent(SortComponent):
             for fr in file_handlers:
                 line = fr.readline().strip()
                 if line and not written_header:
-                    header += self.get_key(line, self._config["key"], self._config["delimiter"]).split(self._config["delimiter"])
+                    header += self.get_key(line, self._config["key"], self._config["input_delimiter"]).split(self._config["input_delimiter"])
                     written_header = True
 
-            fw.write("{}\n".format(self._config["delimiter"].join(header + self._config["conditions"])))
+            fw.write("{}\n".format(self._config["output_delimiter"].join(header + self._config["conditions"])))
 
         # Initialize heaps
         queue = []
@@ -99,7 +100,7 @@ class CSVAggregatorComponent(SortComponent):
             line = fr.readline().strip()
             if line:
                 heapq.heappush(queue, (
-                    self.get_key(line, self._config["key"], self._config["delimiter"]), 
+                    self.get_key(line, self._config["key"], self._config["input_delimiter"]), 
                     idx, 
                     line
                 ))
@@ -111,30 +112,30 @@ class CSVAggregatorComponent(SortComponent):
 
         while len(queue) > 0:
             key, idx, line = heapq.heappop(queue)
-            line = line.split(self._config["delimiter"])
+            line = line.split(self._config["input_delimiter"])
 
             if key == agg_key:
                 agg_records.append(line)
             else:
                 if agg_key is not None:
-                    futures.append(self._executor.submit(self.aggregate, agg_key.split(self._config["delimiter"]), agg_records, self._config["conditions"]))
+                    futures.append(self._executor.submit(self.aggregate, agg_key.split(self._config["input_delimiter"]), agg_records, self._config["conditions"]))
                 agg_key = key
                 agg_records = [line]
 
             newline = file_handlers[idx].readline().strip()
             if newline:
                 heapq.heappush(queue, (
-                    self.get_key(newline, self._config["key"], self._config["delimiter"]), 
+                    self.get_key(newline, self._config["key"], self._config["input_delimiter"]), 
                     idx,
                     newline
                 ))
 
         if agg_key is not None:
-                futures.append(self._executor.submit(self.aggregate, agg_key.split(self._config["delimiter"]), agg_records, self._config["conditions"]))
+                futures.append(self._executor.submit(self.aggregate, agg_key.split(self._config["input_delimiter"]), agg_records, self._config["conditions"]))
 
         for future in concurrent.futures.as_completed(futures):
             line = future.result()
-            fw.write("{}\n".format(self._config["delimiter"].join(line)))
+            fw.write("{}\n".format(self._config["output_delimiter"].join(line)))
 
         fw.close()
 

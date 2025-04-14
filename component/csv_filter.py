@@ -45,7 +45,8 @@ class CSVFilterComponent(AsyncComponent):
         config = super()._read_config(node_info)
 
         # Default Setting 
-        config["delimiter"] = config.get("delimiter", "|")
+        config["input_delimiter"] = config.get("input_delimiter", ",")
+        config["output_delimiter"] = config.get("output_delimiter", ",")
         config["header"] = config.get("header", True)
         config["conditions"] = config.get("conditions", [])
 
@@ -117,17 +118,17 @@ class CSVFilterComponent(AsyncComponent):
                 line = OrderedDict(
                     (str(idx) if not header else header[idx], field) 
                     for idx, field 
-                    in enumerate(line.split(self._config["delimiter"]))
+                    in enumerate(line.split(self._config["input_delimiter"]))
                 )
                 if not header and self._config["header"]:
                     header = list(line.values())
                     with open(output_filepath, "w") as fw:
-                        fw.write("{}\n".format(self._config["delimiter"].join(header)))
+                        fw.write("{}\n".format(self._config["output_delimiter"].join(header)))
                 else:
                     future = self._executor.submit(self.check_line, line, self._config["conditions"])
                     # Check if __check_line returns true
                     if future.result():
-                        future = self._executor.submit(file_writer.write, output_filepath, self._config["delimiter"].join(line.values()))
+                        future = self._executor.submit(file_writer.write, output_filepath, self._config["output_delimiter"].join(line.values()))
                         futures.append(future)
 
         for future in concurrent.futures.as_completed(futures):

@@ -42,8 +42,7 @@
                     [
                         "equals($2, 'bbb')"
                     ]
-                ],
-                "delimiter": ","
+                ]
             },
             "script": "csv_filter.py",
             "type": "component"

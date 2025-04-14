@@ -52,7 +52,8 @@ class CSVJoinerComponent(SortComponent):
         config = super()._read_config(node_info)
 
         # Default Setting 
-        config["delimiter"] = config.get("delimiter", ",")
+        config["input_delimiter"] = config.get("input_delimiter", ",")
+        config["output_delimiter"] = config.get("output_delimiter", ",")
         config["header"] = config.get("header", True)
 
         return config
@@ -72,7 +73,7 @@ class CSVJoinerComponent(SortComponent):
                     has_header=self._config["header"],
                     key=MakeItPicklableWrapper(self.get_key).add_args(
                         self._config["key"][input_idx], 
-                        self._config["delimiter"]
+                        self._config["input_delimiter"]
                     )
                 )
                 for filepath 
@@ -100,7 +101,7 @@ class CSVJoinerComponent(SortComponent):
             for file_handler_list in file_handlers:
                 written_header = False
                 for fr in file_handler_list:
-                    line = fr.readline().strip().split(self._config["delimiter"])
+                    line = fr.readline().strip().split(self._config["input_delimiter"])
                     if line and not written_header:
                         header.append(line)
                         written_header = True
@@ -120,7 +121,7 @@ class CSVJoinerComponent(SortComponent):
                 for j_idx, head 
                 in enumerate(header) 
             ]
-            fw.write("{}\n".format(self._config["delimiter"].join(list(flatten(header)))))
+            fw.write("{}\n".format(self._config["output_delimiter"].join(list(flatten(header)))))
 
         # Initialize heaps
         queues = []
@@ -130,12 +131,12 @@ class CSVJoinerComponent(SortComponent):
                 line = fr.readline().strip()
                 if line:
                     heapq.heappush(queues[input_idx], (
-                        self.get_key(line, self._config["key"][input_idx], self._config["delimiter"]), 
+                        self.get_key(line, self._config["key"][input_idx], self._config["input_delimiter"]), 
                         input_idx,
                         file_handler_idx, 
-                        self._config["delimiter"].join([
+                        self._config["input_delimiter"].join([
                             item 
-                            for idx, item in enumerate(line.split(self._config["delimiter"])) 
+                            for idx, item in enumerate(line.split(self._config["input_delimiter"])) 
                             if idx + 1 not in self._config["key"][input_idx]
                         ])
                     ))
@@ -164,12 +165,12 @@ class CSVJoinerComponent(SortComponent):
                     newline = file_handlers[input_idx][file_handler_idx].readline().strip()
                     if newline:
                         heapq.heappush(queues[cursor], (
-                                self.get_key(newline, self._config["key"][input_idx], self._config["delimiter"]), 
+                                self.get_key(newline, self._config["key"][input_idx], self._config["input_delimiter"]), 
                                 input_idx,
                                 file_handler_idx,
-                                self._config["delimiter"].join([
+                                self._config["input_delimiter"].join([
                                     item 
-                                    for idx, item in enumerate(newline.split(self._config["delimiter"])) 
+                                    for idx, item in enumerate(newline.split(self._config["input_delimiter"])) 
                                     if idx + 1 not in self._config["key"][input_idx]
                                 ])
                             ))
@@ -183,7 +184,7 @@ class CSVJoinerComponent(SortComponent):
                             line
                         ))
             else:
-                fw.write("{}\n".format(self._config["delimiter"].join([join_key] + join_line)))
+                fw.write("{}\n".format(self._config["output_delimiter"].join([join_key] + join_line)))
                 join_line.pop()
 
         fw.close()

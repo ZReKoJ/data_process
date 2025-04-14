@@ -129,7 +129,12 @@ class CSVMatcherCompareByKeyComponent(SortComponent):
 
         while sum([ len(queue) for queue in queues]) > 0:
 
+            for queue in queues:
+                print(queue)
+
             selected = [ heapq.heappop(queue) if len(queue) > 0 else None for queue in queues ] 
+
+            print("selected", selected)
 
             minimum = next(
                 iter(sorted(
@@ -139,22 +144,30 @@ class CSVMatcherCompareByKeyComponent(SortComponent):
                 None  # Default if the list is empty
             )
 
-            # these has to be pushed back to queue
-            skipped_records = [ 
-                line
-                for line 
-                in selected 
-                if line is not None and line[0] != minimum[0]
-            ]
+            to_compare_records = []
 
-            for skipped_record in skipped_records:
-                heapq.heappush(queues[skipped_record[1]], skipped_record)
+            for idx, selected_record in enumerate(selected):
+                key, input_idx, file_handler_idx, line = selected_record
 
-            to_compare_records = [ 
-                line[3].split(self._config["input_delimiter"]) if line is not None and line[0] == minimum[0] else None 
-                for line 
-                in selected 
-            ]
+                # these has to be pushed back to queue
+                if selected_record is not None and key != minimum[0]:
+                    heapq.heappush(queues[input_idx], selected_record)
+                    to_compare_records.append(None)
+                # these are to be compared and new line should be added to queue
+                elif selected_record is not None and key == minimum[0]:
+                    to_compare_records.append(line.split(self._config["input_delimiter"]))
+                    
+                    line = file_handlers[input_idx][file_handler_idx].readline().strip()
+                    if line:
+                        heapq.heappush(queues[input_idx], (
+                            self.get_key(line, self._config["key"][input_idx], self._config["input_delimiter"]), 
+                            input_idx,
+                            file_handler_idx, 
+                            line
+                        ))
+                # if selected line is None (no more input)
+                else:
+                    to_compare_records.append(None)
 
             # key : minimum[0]
             futures.append(self._executor.submit(self.compare_record, minimum[0], to_compare_records))

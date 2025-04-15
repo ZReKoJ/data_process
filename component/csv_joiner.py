@@ -186,6 +186,9 @@ class CSVJoinerComponent(SortComponent):
             else:
                 fw.write("{}\n".format(self._config["output_delimiter"].join(flatten([join_key] + join_line))))
                 join_line.pop()
+        
+        if len(join_line) == len(sorted_files):
+            fw.write("{}\n".format(self._config["output_delimiter"].join(flatten([join_key] + join_line))))
 
         fw.close()
 

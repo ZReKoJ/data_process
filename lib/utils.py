@@ -9,6 +9,14 @@ import string
 from logging.config import fileConfig
 from multiprocessing import Process, Manager
 
+######################## PRINTING
+
+def progress_bar(current, total, prefix="Progress", fill="█", length=40):
+    percent = ("{0:.1f}").format(100 * (current / float(total)))
+    filled_length = int(length * current // total)
+    bar = fill * filled_length + '-' * (length - filled_length)
+    print("{}: {} {}%".format(prefix, bar, percent))
+
 ######################## DATES
 
 # Given a date convert into string formatted

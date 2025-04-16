@@ -138,6 +138,12 @@
             "script": "csv_matcher_compare_by_key.py",
             "type": "component"
         },
+        "C012": {
+            "name": "compress",
+            "config": {},
+            "script": "tar_gz.py",
+            "type": "component"
+        },
         "C0059": {
             "name": "shell",
             "config": {
@@ -187,6 +193,11 @@
             "C009"
         ],
         "C011": [
+            "C010",
+            "C009"
+        ],
+        "C012": [
+            "C011",
             "C010",
             "C009"
         ]

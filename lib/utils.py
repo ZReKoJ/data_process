@@ -343,3 +343,9 @@ class UtilityFunction:
                 return dictionary
             dictionary[pos_res] = str(dictionary[pos_sum_x]) + str(dictionary[pos_sum_y])
             return dictionary
+
+        def csv_converter_set_value(dictionary, position, value, is_header=False):
+            if is_header:
+                return dictionary
+            dictionary[position] = value
+            return dictionary

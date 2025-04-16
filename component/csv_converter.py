@@ -70,7 +70,6 @@ class CSVConverterComponent(AsyncComponent):
                 index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
                 if index_name:
                     index_value = index_name.group(1)
-                    # if line is digit or str
 
                     # list starts with index 0
                     index = list(line.keys())[int(index_value) - 1] if index_value.isdigit() else index_value

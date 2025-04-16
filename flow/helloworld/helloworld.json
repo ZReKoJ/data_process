@@ -144,6 +144,12 @@
             "script": "tar_gz.py",
             "type": "component"
         },
+        "C013": {
+            "name": "compress",
+            "config": {},
+            "script": "csv2html.py",
+            "type": "component"
+        },
         "C0059": {
             "name": "shell",
             "config": {
@@ -200,6 +206,11 @@
             "C011",
             "C010",
             "C009"
+        ],
+        "C013": [
+            "C010",
+            "C009",
+            "C008"
         ]
     },
     "LOGGING_LEVEL": "INFO",

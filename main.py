@@ -128,7 +128,7 @@ class DataProcessExecutor:
 
             self.__component_commands[node] = " ".join(command)
     
-        for node, command in self.__component_commands.items():
+        for node, command in sorted(self.__component_commands.items()):
             self.log_info("Command --> {}: {}".format(node.ljust(max_node_length), command))
 
     def __check(self):

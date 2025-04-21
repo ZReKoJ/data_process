@@ -53,6 +53,7 @@ class CopyFilesComponent(Component):
         config["in_out"] = config.get("in_out", "in")
         config["move"] = config.get("move", False)
         config["overwrite"] = config.get("overwrite", False)
+        config["preserve"] = config.get("preserve", False)
         config["match"] = config.get("match", [".*"])
 
         return config
@@ -74,7 +75,10 @@ class CopyFilesComponent(Component):
                 if self._config["move"]:
                     shutil.move(origin_file, destination_file)
                 else:
-                    shutil.copy(origin_file, destination_file)
+                    if self._config["preserve"]:
+                        shutil.copy2(origin_file, destination_file)
+                    else:
+                        shutil.copy(origin_file, destination_file)
 
         self.log_info("End Process")
 

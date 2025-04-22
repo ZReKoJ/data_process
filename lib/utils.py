@@ -5,6 +5,7 @@ import copy
 import sys
 import random
 import string
+import re
 
 from logging.config import fileConfig
 from multiprocessing import Process, Manager
@@ -213,6 +214,9 @@ class UtilityFunction:
 
         def not_equals(x, y):
             return x != y
+
+        def regex_match(x, y):
+            return re.match(x, y)
 
     class GeneratorFunction:
 

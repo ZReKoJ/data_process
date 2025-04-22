@@ -78,6 +78,7 @@ class CSV2HTMLComponent(AsyncComponent):
         file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(input_file)))
         output_filepath = os.path.join(output_directory, "{}.html".format(file_basename))
 
+        fw.write("<table>\n")
         with open(output_filepath, "w") as fw:
             # Check if has to read header
             read_header = not has_header
@@ -91,6 +92,7 @@ class CSV2HTMLComponent(AsyncComponent):
                     in line.split(delimiter)
                 ])))
                 read_header = True
+        fw.write("</table>\n")
 
 if __name__ == "__main__":
     try:

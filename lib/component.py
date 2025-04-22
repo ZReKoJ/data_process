@@ -100,10 +100,13 @@ class Component(object):
         self._get_logger(self._LOG_FILE).setLevel(self._config["LOGGING_LEVEL"])
 
         self._OUTPUT_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "_".join([self.whoami(), self._node_info["name"]]))
+        self._execution_variables["output_path"] = self._OUTPUT_PATH
         self._INPUT_PATH = self._args["input"]
+        self._execution_variables["input_path"] = self._INPUT_PATH
         self._TMP_PATH = None
         if tmp:
             self._TMP_PATH = os.path.join(self._BASE_PATH, "execution", self._execution_id, "." + "_".join([self.whoami(), self._node_info["name"]]))
+            self._execution_variables["tmp_path"] = self._TMP_PATH
 
         self._data = self._read_input(self._INPUT_PATH)
 

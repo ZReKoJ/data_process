@@ -39,9 +39,6 @@ class CSVAggregatorComponent(SortComponent):
             else:
                 raise ImportError("Path {} is incorrect".format(input_record))
 
-        if len(files) == 0:
-            raise ImportError("No files found")
-
         return files
         
     # Abstract from parent

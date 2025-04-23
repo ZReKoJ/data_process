@@ -359,3 +359,9 @@ class UtilityFunction:
                 return dictionary
             dictionary[position] = value
             return dictionary
+
+        def csv_converter_replace_fields_by_regex(dictionary, position, regex, value, is_header=False):
+            if is_header:
+                return dictionary
+            dictionary[position] = re.sub(regex, value, dictionary[position])
+            return dictionary

@@ -202,7 +202,7 @@ class CSVJoinerComponent(SortComponent):
     def get_key(cls, line, index_list, delimiter):
         csv_line = line.split(delimiter)
         # idx - 1, starts with 0 the list, and passed variable starts with 1
-        return delimiter.join([ csv_line[idx - 1] for idx in index_list])
+        return delimiter.join([ csv_line[idx - 1] if idx > 0 else csv_line[idx] for idx in index_list])
 
 if __name__ == "__main__":
     try:

@@ -17,7 +17,7 @@ from data_process_lib import AsyncComponent
 class CSVFilterComponent(AsyncComponent):
 
     __CONDITION_FUNCTION_REGEX = '(\\w+)\\(([^)]+)\\)'
-    __CONDITION_PARAMETER_REGEX = '\\$(\\w+)'
+    __CONDITION_PARAMETER_REGEX = '\\$([\\w-]+)'
 
     def __init__(self):
         super().__init__()
@@ -69,11 +69,13 @@ class CSVFilterComponent(AsyncComponent):
                     index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
                     if index_name:
                         index_value = index_name.group(1)
-
-                        # list starts with index 0
-                        index = list(line.keys())[int(index_value) - 1] if index_value.isdigit() else index_value
-
-                        # list starts with index 0
+                    
+                        try:
+                            index = int(index_value)
+                            index = list(line.keys())[index - 1 if index > 0 else index]
+                        except ValueError:
+                            index = index_value
+                            
                         function_parameters.append(line[index])
                         continue
                     

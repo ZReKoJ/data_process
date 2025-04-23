@@ -17,7 +17,7 @@ from data_process_lib import SortComponent
 class CSVAggregatorComponent(SortComponent):
 
     __CONDITION_FUNCTION_REGEX = '(\\w+)\\(([^)]+)\\)'
-    __CONDITION_PARAMETER_REGEX = '\\$(\\w+)'
+    __CONDITION_PARAMETER_REGEX = '\\$([\\w-]+)'
     __CLASS_ID = "csv_aggregator"
 
     def __init__(self):
@@ -169,11 +169,14 @@ class CSVAggregatorComponent(SortComponent):
                     index_name = re.match(cls.__CONDITION_PARAMETER_REGEX, parameter)
                     if index_name:
                         index_value = index_name.group(1)
-                        # if line is digit or dict
-                        index = int(index_value) if index_value.isdigit() else index_value
+                    
+                        try:
+                            index = int(index_value)
+                            index = list(line.keys())[index - 1 if index > 0 else index]
+                        except ValueError:
+                            index = index_value
 
-                        # list starts with index 0
-                        parameters.append(line[index - 1])
+                        parameters.append(line[index])
                         continue
                     
                     # Check if it is a string ('')

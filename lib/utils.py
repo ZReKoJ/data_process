@@ -24,6 +24,12 @@ def progress_bar(current, total, prefix="Progress", fill="█", length=40):
 def get_time(date=datetime.datetime.now(), dateformat="%Y-%m-%d %H:%M:%S"):
     return date.strftime(dateformat)
 
+######################## NUMBERS
+
+# Check it string is int
+def is_int(s):
+    return re.fullmatch('-?\\d+', s) is not None
+
 ######################## FOLDERS
 
 # IMPROVEMENT: Can rewrite the function to accept recursion create paths

@@ -133,7 +133,7 @@ class XLSX2CSVComponent(AsyncComponent):
 
         file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(origin_filepath)))
 
-        cls.log_info("Reading workbook[{}]".format("{}.{}".format(file_basename, file_extension)))
+        cls.log_info("Reading workbook[{}]".format("{}{}".format(file_basename, file_extension)))
 
         with zipfile.ZipFile(origin_filepath, "r") as zip_file:
 

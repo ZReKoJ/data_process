@@ -147,7 +147,7 @@ class XLSX2CSVComponent(AsyncComponent):
                 relations = cls.get_relations(ET.parse(xml))
             
             for sheet_id, sheetname, sheet_rid in worksheets:
-                cls.log_info("Reading workbook[{}] worksheet[{}]".format("{}.{}".format(file_basename, file_extension), sheetname))
+                cls.log_info("Reading workbook[{}] worksheet[{}]".format("{}{}".format(file_basename, file_extension), sheetname))
                 with zip_file.open('xl/{}'.format(relations[sheet_rid])) as xml:
                     # Multiprocessing only on component level, if any sublevel multiprocessing
                     # It should be responsible from the component logic

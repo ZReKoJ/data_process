@@ -17,3 +17,4 @@ if [ $# -eq 0 ]; then
     ${directory}/../main.py ${path}
 else
     ${directory}/../main.py $@
+fi

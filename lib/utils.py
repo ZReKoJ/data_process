@@ -272,6 +272,9 @@ class UtilityFunction:
         def random_digit_5(value):
             return ''.join(random.choice(string.digits) for i in range(5))
 
+        def random_digit_46(value):
+            return ''.join(random.choice(string.digits) for i in range(46))
+
         def random_digit_2_without_0(value):
             return str(random.randint(1, 99))
 
@@ -280,6 +283,12 @@ class UtilityFunction:
 
         def keep_3_first_fill_random_char_46(value):
             return value[0:3] + "".join(random.choice(string.ascii_lowercase) for i in range(46 - 3))
+
+        def keep_3_first_fill_random_char_10(value):
+            return value[0:3] + "".join(random.choice(string.ascii_lowercase) for i in range(10 - 3))
+
+        def keep_3_first_fill_random_char_19(value):
+            return value[0:3] + "".join(random.choice(string.ascii_lowercase) for i in range(19 - 3))
 
         def incremental_random_char_29(value):
             incremental_length = 9

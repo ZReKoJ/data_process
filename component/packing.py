@@ -90,10 +90,6 @@ class PackingComponent(AsyncComponent):
                 in self._data
             ]
         else: 
-            packing.decompress(
-                "/home/miguser/csscript/zihao/data_process-main/execution/OSP2a2_OSPENT1_OSPENT2_OSPASEG_mastool_compare_sao_20250701165551/OSPENT2001_get_sao_files/cbs_pm_static_prop_inst_all_20250630_101_101_0_0.unl.gz",
-                "/home/miguser/csscript/zihao/data_process-main/execution/OSP2a2_OSPENT1_OSPENT2_OSPASEG_mastool_compare_sao_20250701165551/OSPENT2002_decompress_tar_gz"
-            )
             futures = [ 
                 self._executor.submit(packing.decompress, os.path.join(root, filename), self._OUTPUT_PATH)
                 for filepath

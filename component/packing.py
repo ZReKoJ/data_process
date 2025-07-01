@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib'
 
 from data_process_lib import AsyncComponent
 
-class TarGzComponent(AsyncComponent):
+class PackingComponent(AsyncComponent):
 
     def __init__(self):
         super().__init__()
@@ -55,7 +55,7 @@ class TarGzComponent(AsyncComponent):
 
 if __name__ == "__main__":
     try:
-        component = TarGzComponent()
+        component = PackingComponent()
         component.init()
         component.process()
     except:

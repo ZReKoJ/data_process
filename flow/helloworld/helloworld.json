@@ -102,8 +102,8 @@
                     1
                 ],
                 "conditions": [
-                    "count($2)",
-                    "sum($1)"
+                    "count(2)",
+                    "sum(1)"
                 ]
             },
             "script": "csv_aggregator.py",
@@ -141,7 +141,7 @@
         "C012": {
             "name": "compress",
             "config": {},
-            "script": "tar_gz.py",
+            "script": "packing.py",
             "type": "component"
         },
         "C013": {

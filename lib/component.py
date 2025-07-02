@@ -6,18 +6,25 @@ import shutil
 import re
 
 from logging.config import fileConfig
-from utils import json_raise_on_duplicates
+from utils import *
 from collections import OrderedDict
 
 def json_custom_process(key_value_pairs, mapping_values):
 
     mapped_key_value_pairs = [ 
-        (key, re.sub(
-            # {word} pattern
-            "\\{(\\w+)\\}",
-            lambda ocurrence : str(mapping_values.get(ocurrence.group(1), ocurrence.group(0))),
-            value
-        ) if isinstance(value, str) else value)
+        (
+            key, ( lambda function: function(function, value) )(
+                lambda self, parameter: re.sub(
+                    # {word} pattern
+                    "\\{(\\w+)\\}",
+                    lambda ocurrence : str(mapping_values.get(ocurrence.group(1), ocurrence.group(0))),
+                    parameter
+                ) 
+                if isinstance(parameter, str) 
+                else [ self(self, element) for element in parameter ] if isinstance(parameter, list) 
+                else parameter
+            )
+        )
         for key, value 
         in key_value_pairs 
     ]
@@ -56,7 +63,8 @@ class Component(object):
             "flow_path" : self._FLOW_CONFIG,
             "base_path" : self._BASE_PATH,
             "log_path" : self._LOG_PATH,
-            "current_path" : os.getcwd()
+            "current_path" : os.getcwd(),
+            "time_now_YYYYMMDDHH24MISS" : get_time(dateformat="%Y%m%d%H%M%S")
         }
 
         logger = self._get_logger(self._LOG_FILE)

@@ -36,10 +36,6 @@ class CSVJoinerComponent(SortComponent):
             else:
                 raise ImportError("Path {} is incorrect".format(input_record))
 
-        files = [ filepath for filepath in files if filepath.endswith(".csv")]
-        if len(files) == 0:
-            raise ImportError("No .csv files found")
-
         return files
         
     # Abstract from parent

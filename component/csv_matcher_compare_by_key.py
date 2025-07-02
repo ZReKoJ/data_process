@@ -34,14 +34,9 @@ class CSVMatcherCompareByKeyComponent(SortComponent):
                         in os.walk(path) 
                         if len(files) > 0 
                             for filename in files 
-                            # if filename.endswith(".csv")
                     ], 
                     input_list
                 ))
-
-            for idx, files in enumerate(data):
-                if len(files) == 0:
-                    raise ImportError("No .csv files found for the input {}".format(idx))
 
             return data
 

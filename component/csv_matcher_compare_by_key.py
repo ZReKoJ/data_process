@@ -34,7 +34,7 @@ class CSVMatcherCompareByKeyComponent(SortComponent):
                         in os.walk(path) 
                         if len(files) > 0 
                             for filename in files 
-                            if filename.endswith(".csv")
+                            # if filename.endswith(".csv")
                     ], 
                     input_list
                 ))

@@ -375,3 +375,13 @@ class UtilityFunction:
                 return dictionary
             dictionary[position] = re.sub(regex, value, dictionary[position])
             return dictionary
+
+        def csv_converter_add_record_length(dictionary, field_name, is_header=False):
+            if field_name in dictionary:
+                raise AssertionError("Key {} exists in {}".format(field_name, dictionary))
+
+            if is_header:
+                default_value = field_name
+            dictionary[field_name] = len(dictionary)
+
+            return dictionary

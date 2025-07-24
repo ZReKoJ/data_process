@@ -385,3 +385,21 @@ class UtilityFunction:
             dictionary[field_name] = len(dictionary)
 
             return dictionary
+
+        def csv_converter_left_strip(dictionary, position, is_header=False):
+            if is_header:
+                return dictionary
+            dictionary[position] = dictionary[position].lstrip()
+            return dictionary
+
+        def csv_converter_right_strip(dictionary, position, is_header=False):
+            if is_header:
+                return dictionary
+            dictionary[position] = dictionary[position].rstrip()
+            return dictionary
+
+        def csv_converter_strip(dictionary, position, is_header=False):
+            if is_header:
+                return dictionary
+            dictionary[position] = dictionary[position].strip()
+            return dictionary

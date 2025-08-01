@@ -42,7 +42,8 @@ class CommandComponent(Component):
             # Execute the command and capture the output
             self.log_info("Execute command: {}".format(command.format(**variables)))
             output = subprocess.check_output(
-                list(map(lambda sentence : sentence.format(**variables), command.split(" ")))
+                command.format(**variables),
+                shell = True
             ).decode("utf-8")
 
             with open("{}/{}.result".format(self._OUTPUT_PATH, variable), 'a') as fw:

@@ -254,8 +254,17 @@ class UtilityFunction:
         def timeHH24_MI_SS(value):
             return get_time(date=datetime.datetime.now(), dateformat="%H:%M:%S")
 
+        def timeDD_MM_YYYY(value):
+            return get_time(date=datetime.datetime.now(), dateformat="%d/%m/%Y")
+
+        def timeDD_MM_YYYY_HH24_MI_SS(value):
+            return get_time(date=datetime.datetime.now(), dateformat="%d/%m/%Y %H:%M:%S")
+
         def random_char_29(value):
             return ''.join(random.choice(string.ascii_lowercase) for i in range(29))
+
+        def random_digit_19(value):
+            return ''.join(random.choice(string.digits) for i in range(19))
 
         def random_digit_12(value):
             return ''.join(random.choice(string.digits) for i in range(12))
@@ -403,3 +412,4 @@ class UtilityFunction:
                 return dictionary
             dictionary[position] = dictionary[position].strip()
             return dictionary
+

@@ -5,6 +5,7 @@ import os
 import time 
 import re
 import heapq
+import itertools
 
 import concurrent.futures
 
@@ -34,7 +35,6 @@ class CSVJoinerComponent(SortComponent):
                         in os.walk(path) 
                         if len(files) > 0 
                             for filename in files 
-                            if filename.endswith(".csv")
                     ], 
                     input_list
                 ))
@@ -55,6 +55,7 @@ class CSVJoinerComponent(SortComponent):
         config["input_delimiter"] = config.get("input_delimiter", ",")
         config["output_delimiter"] = config.get("output_delimiter", ",")
         config["header"] = config.get("header", True)
+        config["join_none"] = config.get("join_none", False)
 
         return config
         
@@ -124,71 +125,67 @@ class CSVJoinerComponent(SortComponent):
             fw.write("{}\n".format(self._config["output_delimiter"].join(list(flatten(header)))))
 
         # Initialize heaps
+        num_fields_without_key = [None] * len(sorted_files)
         queues = []
         for input_idx, file_handler_list in enumerate(file_handlers):
             queues.append([])
             for file_handler_idx, fr in enumerate(file_handler_list):
                 line = fr.readline().strip()
                 if line:
+                    line_without_key = [
+                        item 
+                        for idx, item in enumerate(line.split(self._config["input_delimiter"])) 
+                        if idx + 1 not in self._config["key"][input_idx]
+                    ]
+                    if num_fields_without_key[input_idx] is None:
+                        num_fields_without_key[input_idx] = len(line_without_key)
+                    elif num_fields_without_key[input_idx] != len(line_without_key):
+                        raise ImportError("Number of fields do not match!!!")
                     heapq.heappush(queues[input_idx], (
                         self.get_key(line, self._config["key"][input_idx], self._config["input_delimiter"]), 
                         input_idx,
                         file_handler_idx, 
-                        self._config["input_delimiter"].join([
-                            item 
-                            for idx, item in enumerate(line.split(self._config["input_delimiter"])) 
-                            if idx + 1 not in self._config["key"][input_idx]
-                        ])
+                        self._config["input_delimiter"].join(line_without_key)
                     ))
 
         # Join Loop
         join_line = []
 
         while sum([ len(queue) for queue in queues]) > 0:
-
-            # cursor is the length of the array
-            cursor = len(join_line)
-            if cursor < len(sorted_files):
-                # If not value in queue means the iteration ends
-                if len(queues[cursor]) == 0:
-                    join_line.pop()
-                    continue
-
-                key, input_idx, file_handler_idx, line = heapq.heappop(queues[cursor])
-                # defines the first key
-                if cursor == 0:
-                    join_key = key
-
-                if key == join_key:
-                    join_line.append(line.split(self._config["input_delimiter"]))
-
+        
+            min_key = min([ queue[0][0] for queue in queues if len(queue) > 0 ])
+            
+            records = []
+            
+            for queue in queues:
+                records.append([])
+                
+                while len(queue) > 0 and queue[0][0] == min_key:
+                    key, input_idx, file_handler_idx, line = heapq.heappop(queue)
+                    records[input_idx].append(line)
+                    
                     newline = file_handlers[input_idx][file_handler_idx].readline().strip()
                     if newline:
-                        heapq.heappush(queues[cursor], (
-                                self.get_key(newline, self._config["key"][input_idx], self._config["input_delimiter"]), 
-                                input_idx,
-                                file_handler_idx,
-                                self._config["input_delimiter"].join([
-                                    item 
-                                    for idx, item in enumerate(newline.split(self._config["input_delimiter"])) 
-                                    if idx + 1 not in self._config["key"][input_idx]
-                                ])
-                            ))
-                else:
-                    # get last and return to queue
-                    join_line.pop()
-                    heapq.heappush(queues[cursor], (
-                            key, 
+                        heapq.heappush(queue, (
+                            self.get_key(newline, self._config["key"][input_idx], self._config["input_delimiter"]), 
                             input_idx,
-                            file_handler_idx, 
-                            line
+                            file_handler_idx,
+                            self._config["input_delimiter"].join([
+                                item 
+                                for idx, item in enumerate(newline.split(self._config["input_delimiter"])) 
+                                if idx + 1 not in self._config["key"][input_idx]
+                            ])
                         ))
-            else:
-                fw.write("{}\n".format(self._config["output_delimiter"].join(flatten([join_key] + join_line))))
-                join_line.pop()
-        
-        if len(join_line) == len(sorted_files):
-            fw.write("{}\n".format(self._config["output_delimiter"].join(flatten([join_key] + join_line))))
+            
+            if self._config["join_none"]:
+                # if empty one array, fill with one record_lines with empty values
+                records = [ record_lines if len(record_lines) > 0 else [self._config["input_delimiter"] * (num_fields_without_key[record_idx] - 1)] for record_idx, record_lines in enumerate(records) ]
+                
+            for combo in itertools.product(*records):
+                fw.write("{}\n".format(self._config["output_delimiter"].join(
+                    [ min_key.replace(self._config["input_delimiter"], self._config["output_delimiter"]) ] + 
+                    [ line_part.replace(self._config["input_delimiter"], self._config["output_delimiter"]) for line_part in combo ]
+                )))
 
         fw.close()
 

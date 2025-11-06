@@ -97,10 +97,10 @@ class CSVConverterComponent(AsyncComponent):
 
         futures = []
 
-        for filepath in self._data:
+        for file_idx, filepath in enumerate(self._data):
             
             file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
-            output_filepath = os.path.join(self._OUTPUT_PATH, "{}_converted{}".format(file_basename, file_extension))
+            output_filepath = os.path.join(self._OUTPUT_PATH, "{}_{}_converted{}".format(file_basename, file_idx, file_extension))
             header = None
 
             for line in read_file_line_by_line(filepath):

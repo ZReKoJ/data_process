@@ -64,7 +64,8 @@ class Component(object):
             "base_path" : self._BASE_PATH,
             "log_path" : self._LOG_PATH,
             "current_path" : os.getcwd(),
-            "time_now_YYYYMMDDHH24MISS" : get_time(dateformat="%Y%m%d%H%M%S")
+            "time_now_YYYYMMDDHH24MISS" : get_time(dateformat="%Y%m%d%H%M%S"),
+            "time_now_YYYYMMDD" : get_time(dateformat="%Y%m%d")
         }
 
         logger = self._get_logger(self._LOG_FILE)

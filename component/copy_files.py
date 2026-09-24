@@ -57,6 +57,7 @@ class CopyFilesComponent(Component):
         config["match"] = config.get("match", [".*"])
         config["match_by_full_path"] = config.get("match_by_full_path", False)
         config["skip_empty_files"] = config.get("skip_empty_files", False)
+        config["name_mapping"] = config.get("name_mapping", {})
 
         return config
 
@@ -73,7 +74,14 @@ class CopyFilesComponent(Component):
             if any([ re.search(regex, filename if not self._config["match_by_full_path"] else origin_file) for regex in self._config["match"]]):
                 if self._config["skip_empty_files"] and os.stat(origin_file).st_size == 0:
                     continue
-                destination_file = os.path.join(destination_path, filename)
+                destination_file =  os.path.join(destination_path, next(
+                    (
+                        self._config["name_mapping"][pattern]
+                        for pattern in self._config["name_mapping"]
+                        if re.fullmatch(pattern, filename)
+                    ),
+                    filename
+                ))
                 if not self._config["overwrite"] and os.path.exists(destination_file):
                     raise FileExistsError("{} file already exists in the destination folder".format(filename))
                 if self._config["move"]:

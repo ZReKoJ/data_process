@@ -94,7 +94,7 @@ class CSVFilterComponent(AsyncComponent):
 
             # if after any iteration the result for one is True, it means in or clause it will be True so directly return True
             if result:
-                return True
+                return line
         
     # Abstract from parent
     def process(self):
@@ -102,40 +102,48 @@ class CSVFilterComponent(AsyncComponent):
 
         self.log_info("Start Process")
 
-        file_writer = FileWriter(mode="a" if self._config["header"] else "w")
+        # self._data = ["/home/miguser/csscript/zihao/data_process-main/execution/grafana_info_20260923170529/M003_get_output_files/Online_NorthCGW_20260923.log"]
 
-        futures = []
-
-        for filepath in self._data:
-            
-            file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
-            output_filepath = os.path.join(self._OUTPUT_PATH, "{}_filtered{}".format(file_basename, file_extension))
-            header = None
-
-            for line in read_file_line_by_line(filepath):
-                line = OrderedDict(
-                    (str(idx) if not header else header[idx], field) 
-                    for idx, field 
-                    in enumerate(line.split(self._config["input_delimiter"]))
-                )
-                if not header and self._config["header"]:
-                    header = list(line.values())
-                    with open(output_filepath, "w") as fw:
-                        fw.write("{}\n".format(self._config["output_delimiter"].join(header)))
-                else:
-                    future = self._executor.submit(self.check_line, line, self._config["conditions"])
-                    # Check if __check_line returns true
-                    if future.result():
-                        future = self._executor.submit(file_writer.write, output_filepath, self._config["output_delimiter"].join(line.values()))
-                        futures.append(future)
+        futures = [ self._executor.submit(self.filter_file, filepath, self._OUTPUT_PATH, self._config) for filepath in self._data ]
 
         for future in concurrent.futures.as_completed(futures):
             # Just to trigger exceptions if any
             future.result()
 
-        file_writer.shutdown()
-
         self.log_info("End Process")
+       
+    @classmethod 
+    def filter_file(cls, filepath, out_path, config): 
+        executor = concurrent.futures.ProcessPoolExecutor(max_workers=config["WORKERS"])
+
+        futures = []
+        
+        file_basename, file_extension = os.path.splitext(os.path.basename(os.path.normpath(filepath)))
+        output_filepath = os.path.join(out_path, "{}_filtered{}".format(file_basename, file_extension))
+        header = None
+        fw = open(output_filepath, "w")
+
+        for line in read_file_line_by_line(filepath):
+            line = OrderedDict(
+                (str(idx) if not header else header[idx], field) 
+                for idx, field 
+                in enumerate(line.split(config["input_delimiter"]))
+            )
+            if not header and config["header"]:
+                header = list(line.values())
+                fw.write("{}\n".format(config["output_delimiter"].join(header)))
+            else:
+                future = executor.submit(cls.check_line, line, config["conditions"])
+                futures.append(future)
+        
+        for future in concurrent.futures.as_completed(futures):
+            # Check if __check_line returns true
+            line = future.result()
+            if line:
+                fw.write("{}\n".format(config["output_delimiter"].join(line.values())))
+                    
+        executor.shutdown(wait=True)
+        
 
 if __name__ == "__main__":
     try:
